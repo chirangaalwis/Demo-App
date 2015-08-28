@@ -15,28 +15,42 @@
 */
 package org.wso2.carbon.docker.images;
 
-import org.wso2.carbon.docker.images.exceptions.DockerImageBuilderException;
-import org.wso2.carbon.docker.images.implementation.DockerWebAppImageBuilder;
-import org.wso2.carbon.docker.images.interfaces.IDockerWebAppImageBuilder;
+/*import org.wso2.carbon.docker.images.exceptions.DockerImageBuilderException;
+import org.wso2.carbon.docker.images.interfaces.IDockerWebAppImageBuilder;*/
+
+import com.spotify.docker.client.DockerCertificateException;
+import com.spotify.docker.client.DockerException;
+import org.wso2.carbon.javadocker.tomcat.IDockerImageBuilder;
+import org.wso2.carbon.javadocker.tomcat.implementation.DockerWebAppImageBuilder;
 
 public class DockerImageTester {
 
     public static void main(String[] args) {
         try {
+            IDockerImageBuilder imageBuilder = new DockerWebAppImageBuilder();
+            imageBuilder.buildImage(DockerImageTestConstants.WEB_APP_PATH);
+        } catch (DockerCertificateException e) {
+            e.printStackTrace();
+        } catch (DockerException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        /*try {
             IDockerWebAppImageBuilder builder = new DockerWebAppImageBuilder();
 
             // uncomment when running tests
 
             // image build test
-            /*builder.buildImage(DockerImageTestConstants.TENANT_NAME, DockerImageTestConstants.APP_NAME,
-                    DockerImageTestConstants.VERSION, DockerImageTestConstants.WEB_APP_PATH);*/
+            builder.buildImage(DockerImageTestConstants.TENANT_NAME, DockerImageTestConstants.APP_NAME,
+                    DockerImageTestConstants.VERSION, DockerImageTestConstants.WEB_APP_PATH);
 
             // image remove test
-            /*builder.removeImages(DockerImageTestConstants.TENANT_NAME, DockerImageTestConstants.APP_NAME,
-                    DockerImageTestConstants.VERSION);*/
+            *//*builder.removeImages(DockerImageTestConstants.TENANT_NAME, DockerImageTestConstants.APP_NAME,
+                    DockerImageTestConstants.VERSION);*//*
         } catch (DockerImageBuilderException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
 }
