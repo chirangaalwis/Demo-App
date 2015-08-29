@@ -15,25 +15,21 @@
 */
 package org.wso2.carbon.docker.images;
 
-/*import org.wso2.carbon.docker.images.exceptions.DockerImageBuilderException;
-import org.wso2.carbon.docker.images.interfaces.IDockerWebAppImageBuilder;*/
-
-import com.spotify.docker.client.DockerCertificateException;
-import com.spotify.docker.client.DockerException;
-import org.wso2.carbon.javadocker.tomcat.IDockerImageBuilder;
-import org.wso2.carbon.javadocker.tomcat.implementation.DockerWebAppImageBuilder;
+import org.wso2.carbon.docker.interfaces.IDockerImageBuilder;
+import org.wso2.carbon.docker.JavaWebArtifactImageBuilder;
+import org.wso2.carbon.exceptions.WebArtifactHandlerException;
 
 public class DockerImageTester {
 
     public static void main(String[] args) {
         try {
-            IDockerImageBuilder imageBuilder = new DockerWebAppImageBuilder();
-            imageBuilder.buildImage(DockerImageTestConstants.WEB_APP_PATH);
-        } catch (DockerCertificateException e) {
-            e.printStackTrace();
-        } catch (DockerException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+            IDockerImageBuilder imageBuilder = new JavaWebArtifactImageBuilder();
+            //            imageBuilder.buildImage(DockerImageTestConstants.WEB_APP_PATH);
+            imageBuilder.buildImage(DockerImageTestConstants.TENANT_NAME, DockerImageTestConstants.APP_NAME,
+                    DockerImageTestConstants.VERSION, DockerImageTestConstants.WEB_APP_PATH);
+            /*imageBuilder.removeImage(DockerImageTestConstants.TENANT_NAME, DockerImageTestConstants.APP_NAME,
+                    DockerImageTestConstants.VERSION);*/
+        } catch (WebArtifactHandlerException e) {
             e.printStackTrace();
         }
         /*try {

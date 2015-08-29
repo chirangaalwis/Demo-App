@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="uber-java-dockerfile-image-builder-1.0-SNAPSHOT">
-    <CLASSES>
-      <root url="jar://$USER_HOME$/WSO2CarbonIDEA/CarbonProjects/JavaDockerImageBuilder/target/uber-java-dockerfile-image-builder-1.0-SNAPSHOT.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
