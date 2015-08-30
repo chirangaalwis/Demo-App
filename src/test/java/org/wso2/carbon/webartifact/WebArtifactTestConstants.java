@@ -19,7 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class WebArtifactTestConstants {
-    protected static final String TENANT_NAME = "abc.com";
+    protected static final String TENANT_NAME = "abc-com";
     protected static final String APP_NAME = "app";
     protected static final String VERSION = "1.0";
     protected static final Path WEB_APP_PATH = Paths

@@ -17,10 +17,7 @@ package org.wso2.carbon.kubernetes.tomcat.components.pods;
 
 import io.fabric8.kubernetes.api.KubernetesClient;
 import io.fabric8.kubernetes.api.KubernetesFactory;
-import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.ObjectMeta;
-import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.PodSpec;
+import io.fabric8.kubernetes.api.model.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.kubernetes.tomcat.components.pods.interfaces.ITomcatPodHandler;
@@ -103,10 +100,11 @@ public class TomcatPodHandler implements ITomcatPodHandler {
         }
     }
 
-    public void deleteReplicaPods(String podBaseName) throws WebArtifactHandlerException {
+    public void deleteReplicaPods(String creator, String podBaseName) throws WebArtifactHandlerException {
         try {
             for(Pod pod : client.getPods().getItems()) {
-                if(pod.getMetadata().getName().contains(podBaseName)) {
+                if((pod.getMetadata().getName().contains(creator)) &&
+                        (pod.getMetadata().getName().contains(podBaseName))) {
                     client.deletePod(pod.getMetadata().getName());
                 }
             }

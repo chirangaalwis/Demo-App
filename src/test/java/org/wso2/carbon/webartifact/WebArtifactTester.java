@@ -23,8 +23,10 @@ public class WebArtifactTester {
         try {
             IWebArtifactHandler webArtifactHandler = new WebArtifactHandler(WebArtifactTestConstants.ENDPOINT_URL);
 
-            webArtifactHandler.deploy(WebArtifactTestConstants.TENANT_NAME, WebArtifactTestConstants.APP_NAME,
-                    WebArtifactTestConstants.WEB_APP_PATH, WebArtifactTestConstants.VERSION, 3);
+//            webArtifactHandler.deploy(WebArtifactTestConstants.TENANT_NAME, WebArtifactTestConstants.APP_NAME,
+//                    WebArtifactTestConstants.WEB_APP_PATH, WebArtifactTestConstants.VERSION, 3);
+            webArtifactHandler.undeploy(WebArtifactTestConstants.TENANT_NAME, WebArtifactTestConstants.APP_NAME,
+                    WebArtifactTestConstants.WEB_APP_PATH, WebArtifactTestConstants.VERSION);
         } catch (WebArtifactHandlerException e) {
             e.printStackTrace();
         }

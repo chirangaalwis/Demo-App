@@ -20,6 +20,8 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.exceptions.WebArtifactHandlerException;
 import org.wso2.carbon.docker.JavaWebArtifactImageBuilder;
 import org.wso2.carbon.docker.interfaces.IDockerImageBuilder;
+import org.wso2.carbon.kubernetes.tomcat.components.pods.TomcatPodHandler;
+import org.wso2.carbon.kubernetes.tomcat.components.pods.interfaces.ITomcatPodHandler;
 import org.wso2.carbon.kubernetes.tomcat.components.replication_controllers.TomcatReplicationControllerHandler;
 import org.wso2.carbon.kubernetes.tomcat.components.replication_controllers.interfaces.ITomcatReplicationControllerHandler;
 import org.wso2.carbon.kubernetes.tomcat.components.services.TomcatServiceHandler;
@@ -30,6 +32,7 @@ import java.nio.file.Path;
 
 public class WebArtifactHandler implements IWebArtifactHandler {
 
+    private final TomcatPodHandler podHandler;
     private final ITomcatReplicationControllerHandler replicationControllerHandler;
     private final ITomcatServiceHandler serviceHandler;
     private final IDockerImageBuilder imageBuilder;
@@ -37,6 +40,7 @@ public class WebArtifactHandler implements IWebArtifactHandler {
     private static final Log LOG = LogFactory.getLog(TomcatReplicationControllerHandler.class);
 
     public WebArtifactHandler(String endpointURL) throws WebArtifactHandlerException {
+        podHandler = new TomcatPodHandler(endpointURL);
         replicationControllerHandler = new TomcatReplicationControllerHandler(endpointURL);
         serviceHandler = new TomcatServiceHandler(endpointURL);
         imageBuilder = new JavaWebArtifactImageBuilder();
@@ -49,9 +53,10 @@ public class WebArtifactHandler implements IWebArtifactHandler {
 
         try {
             dockerImageName = imageBuilder.buildImage(tenant, appName, version, artifactPath);
+            Thread.sleep(5000);
             replicationControllerHandler.createReplicationController(componentName, componentName,
                     dockerImageName, replicas);
-        } catch (WebArtifactHandlerException exception) {
+        } catch (Exception exception) {
             String message = String.format("Failed to deploy web artifact[web-artifact]: %s",
                     artifactPath.toString());
             LOG.error(message, exception);
@@ -65,9 +70,11 @@ public class WebArtifactHandler implements IWebArtifactHandler {
         String dockerImageName;
 
         try {
-            dockerImageName = imageBuilder.removeImage(tenant, appName, version);
             replicationControllerHandler.deleteReplicationController(componentName);
-        } catch (WebArtifactHandlerException exception) {
+            podHandler.deleteReplicaPods(tenant, appName);
+            Thread.sleep(5000);
+            dockerImageName = imageBuilder.removeImage(tenant, appName, version);
+        } catch (Exception exception) {
             String message = String.format("Failed to remove web artifact[web-artifact]: %s",
                     artifactPath.toString());
             LOG.error(message, exception);

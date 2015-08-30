@@ -34,7 +34,7 @@ public class KubernetesTester {
 
             ITomcatReplicationControllerHandler replicationControllerHandler = new TomcatReplicationControllerHandler("http://127.0.0.1:8080");
 
-//            replicationControllerHandler.createReplicationController("helloworld-rc", "helloworld", "helloworld", 3);
+            replicationControllerHandler.createReplicationController("helloworld-rc", "helloworld", "helloworld", 3);
 
             replicationControllerHandler.deleteReplicationController("helloworld-rc");
         } catch (WebArtifactHandlerException e) {
