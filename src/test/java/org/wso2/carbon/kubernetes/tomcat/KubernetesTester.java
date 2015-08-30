@@ -25,18 +25,20 @@ public class KubernetesTester {
 
     public static void main(String[] args) {
         try {
-            ITomcatPodHandler podHandler = new TomcatPodHandler("http://127.0.0.1:8080");
+            TomcatPodHandler podHandler = new TomcatPodHandler(KubernetesTestConstants.ENDPOINT_URL);
 
             /*podHandler.createPod(KubernetesTestConstants.POD_NAME, KubernetesTestConstants.POD_LABEL,
                     KubernetesTestConstants.POD_IMAGE);*/
 
 //            podHandler.deletePod(KubernetesTestConstants.POD_NAME);
 
-            ITomcatReplicationControllerHandler replicationControllerHandler = new TomcatReplicationControllerHandler("http://127.0.0.1:8080");
+            ITomcatReplicationControllerHandler replicationControllerHandler =
+                    new TomcatReplicationControllerHandler(KubernetesTestConstants.ENDPOINT_URL);
 
-            replicationControllerHandler.createReplicationController("helloworld-rc", "helloworld", "helloworld", 3);
+//            replicationControllerHandler.createReplicationController("helloworld-rc", "helloworld", "helloworld", 3);
 
             replicationControllerHandler.deleteReplicationController("helloworld-rc");
+
         } catch (WebArtifactHandlerException e) {
             e.printStackTrace();
         }

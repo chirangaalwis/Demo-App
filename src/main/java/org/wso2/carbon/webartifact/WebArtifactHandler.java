@@ -72,8 +72,8 @@ public class WebArtifactHandler implements IWebArtifactHandler {
         try {
             replicationControllerHandler.deleteReplicationController(componentName);
             podHandler.deleteReplicaPods(tenant, appName);
-            Thread.sleep(5000);
-            dockerImageName = imageBuilder.removeImage(tenant, appName, version);
+
+//            dockerImageName = imageBuilder.removeImage(tenant, appName, version);
         } catch (Exception exception) {
             String message = String.format("Failed to remove web artifact[web-artifact]: %s",
                     artifactPath.toString());
