@@ -21,7 +21,7 @@ import io.fabric8.kubernetes.api.model.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.kubernetes.tomcat.components.pods.interfaces.ITomcatPodHandler;
-import org.wso2.carbon.kubernetes.tomcat.support.KubernetesConstants;
+import org.wso2.carbon.kubernetes.tomcat.support.KubernetesConstantsExtended;
 import org.wso2.carbon.exceptions.WebArtifactHandlerException;
 
 import java.util.ArrayList;
@@ -55,12 +55,12 @@ public class TomcatPodHandler implements ITomcatPodHandler {
             Pod pod = new Pod();
 
             pod.setApiVersion(Pod.ApiVersion.V_1);
-            pod.setKind(KubernetesConstants.POD_KUBERNETES_COMPONENT_KIND);
+            pod.setKind(KubernetesConstantsExtended.POD_KUBERNETES_COMPONENT_KIND);
 
             ObjectMeta metaData = new ObjectMeta();
             metaData.setName(podName);
             Map<String, String> labels = new HashMap<String, String>();
-            labels.put(KubernetesConstants.LABEL_NAME, podLabel);
+            labels.put(KubernetesConstantsExtended.LABEL_NAME, podLabel);
             metaData.setLabels(labels);
 
             pod.setMetadata(metaData);

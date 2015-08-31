@@ -21,7 +21,7 @@ import io.fabric8.kubernetes.api.model.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.kubernetes.tomcat.components.replication_controllers.interfaces.ITomcatReplicationControllerHandler;
-import org.wso2.carbon.kubernetes.tomcat.support.KubernetesConstants;
+import org.wso2.carbon.kubernetes.tomcat.support.KubernetesConstantsExtended;
 import org.wso2.carbon.exceptions.WebArtifactHandlerException;
 
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
             ReplicationController replicationController = new ReplicationController();
 
             replicationController.setApiVersion(ReplicationController.ApiVersion.V_1);
-            replicationController.setKind(KubernetesConstants.REPLICATION_CONTROLLER_COMPONENT_KIND);
+            replicationController.setKind(KubernetesConstantsExtended.REPLICATION_CONTROLLER_COMPONENT_KIND);
 
             ObjectMeta metadata = new ObjectMeta();
             metadata.setName(controllerName);
@@ -78,7 +78,7 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
             podTemplateSpec.setSpec(podSpec);
 
             Map<String, String> selectors = new HashMap<String, String>();
-            selectors.put(KubernetesConstants.LABEL_NAME, podLabel);
+            selectors.put(KubernetesConstantsExtended.LABEL_NAME, podLabel);
 
             ObjectMeta tempMeta = new ObjectMeta();
             tempMeta.setLabels(selectors);

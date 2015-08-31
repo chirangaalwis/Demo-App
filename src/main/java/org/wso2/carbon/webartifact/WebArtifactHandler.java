@@ -55,6 +55,7 @@ public class WebArtifactHandler implements IWebArtifactHandler {
             Thread.sleep(5000);
             replicationControllerHandler.createReplicationController(componentName, componentName,
                     dockerImageName, replicas);
+            serviceHandler.createService(componentName, appName);
         } catch (Exception exception) {
             String message = String.format("Failed to deploy web artifact[web-artifact]: %s",
                     artifactPath.toString());
@@ -69,6 +70,7 @@ public class WebArtifactHandler implements IWebArtifactHandler {
         try {
             replicationControllerHandler.deleteReplicationController(componentName);
             podHandler.deleteReplicaPods(tenant, appName);
+            serviceHandler.deleteService(componentName);
         } catch (Exception exception) {
             String message = String.format("Failed to remove web artifact[web-artifact]: %s",
                     artifactPath.toString());

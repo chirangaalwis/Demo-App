@@ -21,23 +21,49 @@ import org.apache.stratos.kubernetes.client.KubernetesApiClient;
 import org.apache.stratos.kubernetes.client.KubernetesConstants;
 import org.apache.stratos.kubernetes.client.exceptions.KubernetesClientException;
 import org.apache.stratos.kubernetes.client.interfaces.KubernetesAPIClientInterface;
+import org.wso2.carbon.docker.support.FileOutputThread;
 import org.wso2.carbon.kubernetes.tomcat.components.services.interfaces.ITomcatServiceHandler;
 import org.wso2.carbon.exceptions.WebArtifactHandlerException;
+import org.wso2.carbon.kubernetes.tomcat.support.FileInputThread;
+import org.wso2.carbon.kubernetes.tomcat.support.KubernetesConstantsExtended;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TomcatServiceHandler implements ITomcatServiceHandler {
 
+    private static int nodePortValue;
     private final KubernetesAPIClientInterface client;
 
     private static final Log LOG = LogFactory.getLog(TomcatServiceHandler.class);
 
     public TomcatServiceHandler(String uri) {
         client = new KubernetesApiClient(uri);
+        setInitNodePortValue();
     }
 
     public void createService(String serviceId, String serviceName) throws WebArtifactHandlerException {
-        // TODO: To be changed
+        FileOutputThread fileOutput;
+
         try {
-            client.createService(serviceId, serviceName, 30001, KubernetesConstants.NODE_PORT, "http-1", 8080, "None");
+            client.createService(serviceId, serviceName, nodePortValue, KubernetesConstants.NODE_PORT,
+                    KubernetesConstantsExtended.SERVICE_PORT_NAME,
+                    KubernetesConstantsExtended.TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT,
+                    KubernetesConstantsExtended.SESSION_AFFINITY_CONFIG);
+
+            if(nodePortValue < (KubernetesConstantsExtended.NODE_PORT_UPPER_RANGE - 1)) {
+                nodePortValue++;
+            }
+            else {
+                nodePortValue = KubernetesConstantsExtended.NODE_PORT_LOWER_RANGE;
+            }
+
+            List<String> output = new ArrayList<String>();
+            output.add("" + nodePortValue);
+
+            fileOutput = new
+                    FileOutputThread(KubernetesConstantsExtended.NODE_PORT_ALLOCATION_FILENAME, output);
+            fileOutput.run();
         } catch (KubernetesClientException e) {
             String message = String.format("Could not create the service[service-identifier]: "
                     + "%s", serviceId);
@@ -54,6 +80,21 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
                     + "%s", serviceId);
             LOG.error(message, e);
             throw new WebArtifactHandlerException(message, e);
+        }
+    }
+
+    private void setInitNodePortValue() {
+        FileInputThread fileInput = new FileInputThread(KubernetesConstantsExtended.NODE_PORT_ALLOCATION_FILENAME);
+
+        fileInput.run();
+        List<String> input = fileInput.getFileContent();
+
+        // TODO: To be tested
+        if(input.size() > 0) {
+            nodePortValue = Integer.parseInt(input.get(0));
+        }
+        else {
+            nodePortValue = KubernetesConstantsExtended.NODE_PORT_LOWER_RANGE + 1;
         }
     }
 

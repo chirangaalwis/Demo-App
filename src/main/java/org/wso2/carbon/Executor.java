@@ -97,14 +97,19 @@ public class Executor {
         Path artifactPath = Paths.get(path);
 
         showMenu("App version: ");
-        String version = SCANNER.next();
+        String version = SCANNER.nextLine();
         SCANNER.nextLine();
 
         // Add to list of inputs
         inputs.put("tenant", tenant);
         inputs.put("app", appName);
         inputs.put("artifact", artifactPath);
-        inputs.put("version", version);
+        if(version.equals("")) {
+            inputs.put("version", null);
+        }
+        else {
+            inputs.put("version", version);
+        }
 
         return inputs;
     }
