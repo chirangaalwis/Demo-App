@@ -21,7 +21,6 @@ import org.wso2.carbon.exceptions.WebArtifactHandlerException;
 import org.wso2.carbon.docker.JavaWebArtifactImageBuilder;
 import org.wso2.carbon.docker.interfaces.IDockerImageBuilder;
 import org.wso2.carbon.kubernetes.tomcat.components.pods.TomcatPodHandler;
-import org.wso2.carbon.kubernetes.tomcat.components.pods.interfaces.ITomcatPodHandler;
 import org.wso2.carbon.kubernetes.tomcat.components.replication_controllers.TomcatReplicationControllerHandler;
 import org.wso2.carbon.kubernetes.tomcat.components.replication_controllers.interfaces.ITomcatReplicationControllerHandler;
 import org.wso2.carbon.kubernetes.tomcat.components.services.TomcatServiceHandler;
@@ -67,13 +66,9 @@ public class WebArtifactHandler implements IWebArtifactHandler {
     public void undeploy(String tenant, String appName, Path artifactPath, String version)
             throws WebArtifactHandlerException {
         String componentName = generateKubernetesComponentName(tenant, appName);
-        String dockerImageName;
-
         try {
             replicationControllerHandler.deleteReplicationController(componentName);
             podHandler.deleteReplicaPods(tenant, appName);
-
-//            dockerImageName = imageBuilder.removeImage(tenant, appName, version);
         } catch (Exception exception) {
             String message = String.format("Failed to remove web artifact[web-artifact]: %s",
                     artifactPath.toString());
