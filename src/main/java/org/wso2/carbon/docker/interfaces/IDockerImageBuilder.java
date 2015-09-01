@@ -29,7 +29,7 @@ public interface IDockerImageBuilder {
      * @param imageName         the Docker image identifier
      * @param imageVersion      the Docker image version
      * @param artifactPath      the artifact to be deployed
-     * @return unique identifier of the deleted Docker image
+     * @return unique identifier of the created Docker image
      * @throws WebArtifactHandlerException
      */
     String buildImage(String creator, String imageName, String imageVersion, Path artifactPath) throws

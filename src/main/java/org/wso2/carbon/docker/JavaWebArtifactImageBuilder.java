@@ -89,7 +89,6 @@ public class JavaWebArtifactImageBuilder implements IDockerImageBuilder {
             dockerFile = new File(parentDirectoryPath + File.separator + "Dockerfile");
         }
         else {
-            // TODO: to be tested
             dockerFile = new File("Dockerfile");
         }
 
@@ -98,13 +97,14 @@ public class JavaWebArtifactImageBuilder implements IDockerImageBuilder {
             boolean created = dockerFile.createNewFile();
             if(created) {
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("New Dockerfile created.");
+                    LOG.debug("New Dockerfile created for " + filePath.toString());
                 }
             }
         }
 
         // get base Apache Tomcat Dockerfile content from the application's file
-        List<String> baseDockerFileContent = getDockerFileContent();
+        List<String> baseDockerFileContent;
+        baseDockerFileContent = getDockerFileContent();
 
         /*
         set up a new Dockerfile with the specified WAR file deploying command in the Apache

@@ -15,6 +15,9 @@
 */
 package org.wso2.carbon.exceptions;
 
+/**
+ * a Java application exception class which extends the java.lang.Exception class
+ */
 public class WebArtifactHandlerException extends Exception {
     private String message;
 

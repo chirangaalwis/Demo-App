@@ -51,13 +51,14 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
                     KubernetesConstantsExtended.TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT,
                     KubernetesConstantsExtended.SESSION_AFFINITY_CONFIG);
 
-            if(nodePortValue < (KubernetesConstantsExtended.NODE_PORT_UPPER_RANGE - 1)) {
+            if(nodePortValue < (KubernetesConstantsExtended.NODE_PORT_UPPER_LIMIT)) {
                 nodePortValue++;
             }
             else {
-                nodePortValue = KubernetesConstantsExtended.NODE_PORT_LOWER_RANGE;
+                nodePortValue = KubernetesConstantsExtended.NODE_PORT_LOWER_LIMIT + 1;
             }
 
+            // write the next possible port allocation value to a text file
             List<String> output = new ArrayList<String>();
             output.add("" + nodePortValue);
 
@@ -70,6 +71,25 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
             LOG.error(message, e);
             throw new WebArtifactHandlerException(message, e);
         }
+    }
+
+    public String getClusterIP(String serviceId) throws WebArtifactHandlerException {
+        try {
+            return String.format("http://%s:%d",
+                    client.getService(serviceId).getSpec().getClusterIP(),
+                    KubernetesConstantsExtended.TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT);
+        } catch (KubernetesClientException e) {
+            String message = String.format("Could not find the service[service-identifier] "
+                    + "cluster ip: %s", serviceId);
+            LOG.error(message, e);
+            throw new WebArtifactHandlerException(message, e);
+        }
+    }
+
+    public String getNodePort() {
+        int previousNodePort = (nodePortValue - 1);
+        return String.format("http://%s:%d",
+                KubernetesConstantsExtended.LOCALHOST_NODE_IP, previousNodePort);
     }
 
     public void deleteService(String serviceId) throws WebArtifactHandlerException {
@@ -89,12 +109,11 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
         fileInput.run();
         List<String> input = fileInput.getFileContent();
 
-        // TODO: To be tested
         if(input.size() > 0) {
             nodePortValue = Integer.parseInt(input.get(0));
         }
         else {
-            nodePortValue = KubernetesConstantsExtended.NODE_PORT_LOWER_RANGE + 1;
+            nodePortValue = KubernetesConstantsExtended.NODE_PORT_LOWER_LIMIT + 1;
         }
     }
 

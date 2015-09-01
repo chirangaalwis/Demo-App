@@ -16,13 +16,14 @@
 package org.wso2.carbon.kubernetes.tomcat.support;
 
 public class KubernetesConstantsExtended {
-    public static final String POD_KUBERNETES_COMPONENT_KIND = "Pod";
+    public static final String POD_COMPONENT_KIND = "Pod";
     public static final String REPLICATION_CONTROLLER_COMPONENT_KIND = "ReplicationController";
     public static final String LABEL_NAME = "name";
-    public static final int NODE_PORT_LOWER_RANGE = 30000;
-    public static final int NODE_PORT_UPPER_RANGE = 32767;
+    public static final int NODE_PORT_LOWER_LIMIT = 30000;
+    public static final int NODE_PORT_UPPER_LIMIT = 32767;
     public static final int TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT = 8080;
     public static final String NODE_PORT_ALLOCATION_FILENAME = "NodePortAllocation.txt";
     public static final String SESSION_AFFINITY_CONFIG = "None";
     public static final String SERVICE_PORT_NAME = "http-1";
+    public static final String LOCALHOST_NODE_IP = "127.0.0.1";
 }

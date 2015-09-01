@@ -55,7 +55,7 @@ public class TomcatPodHandler implements ITomcatPodHandler {
             Pod pod = new Pod();
 
             pod.setApiVersion(Pod.ApiVersion.V_1);
-            pod.setKind(KubernetesConstantsExtended.POD_KUBERNETES_COMPONENT_KIND);
+            pod.setKind(KubernetesConstantsExtended.POD_COMPONENT_KIND);
 
             ObjectMeta metaData = new ObjectMeta();
             metaData.setName(podName);

@@ -41,7 +41,6 @@ public class Executor {
 
             showMenu(welcomeMessage);
 
-            // procedure to be tested
             while(true) {
                 int userChoice;
                 do{
@@ -98,7 +97,6 @@ public class Executor {
 
         showMenu("App version: ");
         String version = SCANNER.nextLine();
-        SCANNER.nextLine();
 
         // Add to list of inputs
         inputs.put("tenant", tenant);
@@ -116,38 +114,44 @@ public class Executor {
 
     private static void process(int choice, IWebArtifactHandler webArtifactHandler)
             throws WebArtifactHandlerException {
-        Map<String, Object> inputs;
-        String tenant;
-        String appName;
-        String version;
-        Path artifactPath;
+        if(webArtifactHandler instanceof WebArtifactHandler) {
+            WebArtifactHandler handler = (WebArtifactHandler) webArtifactHandler;
 
-        switch (choice) {
-        case 1:
-            inputs = gatherDeploymentData();
+            Map<String, Object> inputs;
+            String tenant;
+            String appName;
+            String version;
+            Path artifactPath;
 
-            tenant = (String) inputs.get("tenant");
-            appName = (String) inputs.get("app");
-            artifactPath = (Path) inputs.get("artifact");
-            version = (String) inputs.get("version");
-            int replicas = (Integer) (inputs.get("replicas"));
+            switch (choice) {
+            case 1:
+                inputs = gatherDeploymentData();
 
-            webArtifactHandler.deploy(tenant, appName, artifactPath, version, replicas);
-            break;
-        case 2:
-            inputs = gatherIdentifierData();
+                tenant = (String) inputs.get("tenant");
+                appName = (String) inputs.get("app");
+                artifactPath = (Path) inputs.get("artifact");
+                version = (String) inputs.get("version");
+                int replicas = (Integer) (inputs.get("replicas"));
 
-            tenant = (String) inputs.get("tenant");
-            appName = (String) inputs.get("app");
-            artifactPath = (Path) inputs.get("artifact");
-            version = (String) inputs.get("version");
+                webArtifactHandler.deploy(tenant, appName, artifactPath, version, replicas);
+                showMenu(handler.getAccessIPs(tenant, appName));
+                break;
+            case 2:
+                inputs = gatherIdentifierData();
 
-            webArtifactHandler.undeploy(tenant, appName, artifactPath, version);
-            break;
-        case 3:
-            System.exit(0);
-            break;
+                tenant = (String) inputs.get("tenant");
+                appName = (String) inputs.get("app");
+                artifactPath = (Path) inputs.get("artifact");
+                version = (String) inputs.get("version");
+
+                webArtifactHandler.undeploy(tenant, appName, artifactPath, version);
+                break;
+            case 3:
+                System.exit(0);
+                break;
+            }
         }
+
     }
 
 }

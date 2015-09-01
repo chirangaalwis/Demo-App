@@ -36,6 +36,7 @@ public class WebArtifactHandler implements IWebArtifactHandler {
     private final ITomcatServiceHandler serviceHandler;
     private final IDockerImageBuilder imageBuilder;
 
+    private static final int OPERATION_DELAY_IN_MILLISECONDS = 3000;
     private static final Log LOG = LogFactory.getLog(TomcatReplicationControllerHandler.class);
 
     public WebArtifactHandler(String endpointURL) throws WebArtifactHandlerException {
@@ -43,7 +44,7 @@ public class WebArtifactHandler implements IWebArtifactHandler {
         replicationControllerHandler = new TomcatReplicationControllerHandler(endpointURL);
         serviceHandler = new TomcatServiceHandler(endpointURL);
         imageBuilder = new JavaWebArtifactImageBuilder();
-    }
+        }
 
     public void deploy(String tenant, String appName, Path artifactPath, String version,
             int replicas) throws WebArtifactHandlerException {
@@ -52,10 +53,10 @@ public class WebArtifactHandler implements IWebArtifactHandler {
 
         try {
             dockerImageName = imageBuilder.buildImage(tenant, appName, version, artifactPath);
-            Thread.sleep(5000);
+            Thread.sleep(OPERATION_DELAY_IN_MILLISECONDS);
             replicationControllerHandler.createReplicationController(componentName, componentName,
                     dockerImageName, replicas);
-            serviceHandler.createService(componentName, appName);
+            serviceHandler.createService(componentName, componentName);
         } catch (Exception exception) {
             String message = String.format("Failed to deploy web artifact[web-artifact]: %s",
                     artifactPath.toString());
@@ -77,6 +78,17 @@ public class WebArtifactHandler implements IWebArtifactHandler {
             LOG.error(message, exception);
             throw new WebArtifactHandlerException(message, exception);
         }
+    }
+
+    public String getAccessIPs(String tenant, String appName) throws WebArtifactHandlerException {
+        String ipMessage;
+        TomcatServiceHandler tomcatServiceHandler = (TomcatServiceHandler) serviceHandler;
+
+        ipMessage = String.format("Cluster IP: %s\nNodePort: %s\n\n",
+                tomcatServiceHandler.getClusterIP(generateKubernetesComponentName(tenant, appName)),
+                tomcatServiceHandler.getNodePort());
+
+        return ipMessage;
     }
 
     private String generateKubernetesComponentName(String tenant, String appName) {

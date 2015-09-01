@@ -15,8 +15,6 @@
 */
 package org.wso2.carbon.docker.support;
 
-import org.wso2.carbon.docker.support.FileOutput;
-
 import java.io.FileNotFoundException;
 import java.util.List;
 

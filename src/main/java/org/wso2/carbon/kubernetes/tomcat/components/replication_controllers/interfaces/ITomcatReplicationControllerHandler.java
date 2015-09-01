@@ -27,7 +27,7 @@ public interface ITomcatReplicationControllerHandler {
      * @param podLabel                  value for pod label
      * @param tomcatDockerImageName     Apache Tomcat based Docker Image name
      * @param numberOfReplicas          number of pod replicas to be created
-     * @throws Exception
+     * @throws WebArtifactHandlerException
      */
     void createReplicationController(String controllerName, String podLabel, String tomcatDockerImageName,
             int numberOfReplicas) throws WebArtifactHandlerException;
@@ -35,7 +35,7 @@ public interface ITomcatReplicationControllerHandler {
     /**
      * deletes the specified replication controller
      * @param controllerName            name of the replication controller
-     * @throws Exception
+     * @throws WebArtifactHandlerException
      */
     void deleteReplicationController(String controllerName) throws WebArtifactHandlerException;
 }

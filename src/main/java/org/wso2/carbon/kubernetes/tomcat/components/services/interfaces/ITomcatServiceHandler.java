@@ -15,7 +15,6 @@
 */
 package org.wso2.carbon.kubernetes.tomcat.components.services.interfaces;
 
-import org.apache.stratos.kubernetes.client.exceptions.KubernetesClientException;
 import org.wso2.carbon.exceptions.WebArtifactHandlerException;
 
 public interface ITomcatServiceHandler {
@@ -23,14 +22,14 @@ public interface ITomcatServiceHandler {
      * creates a Kubernetes service
      * @param serviceId         id of the service
      * @param serviceName       service name to be used by the label name
-     * @throws Exception
+     * @throws WebArtifactHandlerException
      */
-    void createService(String serviceId, String serviceName) throws Exception;
+    void createService(String serviceId, String serviceName) throws WebArtifactHandlerException;
 
     /**
      * removes the specified Kubernetes service
      * @param serviceId         id of the service
-     * @throws KubernetesClientException
+     * @throws WebArtifactHandlerException
      */
     void deleteService(String serviceId) throws WebArtifactHandlerException;
 }
