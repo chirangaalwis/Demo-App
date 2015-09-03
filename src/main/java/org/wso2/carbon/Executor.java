@@ -81,7 +81,7 @@ public class Executor {
     }
 
     private static Map<String, Object> gatherIdentifierData() {
-        Map<String, Object> inputs = new HashMap<String, Object>();
+        Map<String, Object> inputs = new HashMap<>();
 
         showMenu("Tenant name: ");
         String tenant = SCANNER.next();
@@ -134,7 +134,7 @@ public class Executor {
                 int replicas = (Integer) (inputs.get("replicas"));
 
                 webArtifactHandler.deploy(tenant, appName, artifactPath, version, replicas);
-                showMenu(handler.getAccessIPs(tenant, appName));
+                showMenu(handler.getAccessIPs(tenant, appName, artifactPath));
                 break;
             case 2:
                 inputs = gatherIdentifierData();

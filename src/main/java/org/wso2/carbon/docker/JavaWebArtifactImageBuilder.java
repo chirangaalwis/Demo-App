@@ -18,8 +18,8 @@ package org.wso2.carbon.docker;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerCertificateException;
 import com.spotify.docker.client.DockerClient;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.wso2.carbon.exceptions.WebArtifactHandlerException;
 import org.wso2.carbon.docker.interfaces.IDockerImageBuilder;
 import org.wso2.carbon.docker.support.FileOutputThread;
@@ -36,12 +36,21 @@ import java.util.List;
 public class JavaWebArtifactImageBuilder implements IDockerImageBuilder {
 
     private final DockerClient dockerClient;
-
-    private static final Log LOG = LogFactory.getLog(JavaWebArtifactImageBuilder.class);
+    private static final Logger LOG = LogManager.getLogger(JavaWebArtifactImageBuilder.class);
 
     public JavaWebArtifactImageBuilder() throws WebArtifactHandlerException {
         try {
+
+            // creates a new com.spotify.docker.client.DockerClient
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Creating new DockerClient.");
+            }
             dockerClient = DefaultDockerClient.fromEnv().build();
+            if(LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Creating new DockerClient[docker-client]: %s.",
+                        dockerClient));
+            }
+
         } catch (DockerCertificateException exception) {
             String message = "Could not create a new JavaWebArtifactImageBuilder instance.";
             LOG.error(message, exception);
@@ -49,15 +58,31 @@ public class JavaWebArtifactImageBuilder implements IDockerImageBuilder {
         }
     }
 
-    public String buildImage(String creator, String imageName, String imageVersion, Path artifactPath)
-            throws WebArtifactHandlerException {
+    public String buildImage(String creator, String imageName, String imageVersion,
+            Path artifactPath) throws WebArtifactHandlerException {
         String dockerImageName = generateImageIdentifier(creator, imageName, imageVersion);
         try {
+            /*
+            sets up the environment by creating a new Dockerfile for the specified
+            web-artifact deployment
+             */
             setupEnvironment(artifactPath);
+
+            if(LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Creating a new Apache Tomcat based "
+                        + "Docker image for the [web-artifact] %s web artifact.",
+                        artifactPath.getFileName().toString()));
+            }
             dockerClient.build(artifactPath.getParent(), dockerImageName);
+            if(LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Created a new Apache Tomcat based "
+                                + "Docker image for the [web-artifact] %s web artifact.",
+                        artifactPath.getFileName()));
+            }
+
         } catch (Exception exception) {
-            String message = String.format("Could not create the docker image[image-identifier]: "
-                    + "%s", dockerImageName);
+            String message = String.format("Could not create the Docker image[docker-image]: "
+                    + "%s.", dockerImageName);
             LOG.error(message, exception);
             throw new WebArtifactHandlerException(message, exception);
         }
@@ -69,10 +94,20 @@ public class JavaWebArtifactImageBuilder implements IDockerImageBuilder {
             throws WebArtifactHandlerException {
         String dockerImageName = generateImageIdentifier(creator, imageName, imageVersion);
         try {
+
+            if(LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Removing the Docker image [docker-image]: %s.",
+                        dockerImageName));
+            }
             dockerClient.removeImage(dockerImageName);
+            if(LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Removed the Docker image [docker-image]: %s.",
+                        dockerImageName));
+            }
+
         } catch (Exception exception) {
-            String message = String.format("Could not remove the docker image[image-identifier]: "
-                    + "%s", dockerImageName);
+            String message = String.format("Could not remove the docker image[docker-image]: "
+                    + "%s.", dockerImageName);
             LOG.error(message, exception);
             throw new WebArtifactHandlerException(message, exception);
         }
@@ -80,6 +115,12 @@ public class JavaWebArtifactImageBuilder implements IDockerImageBuilder {
         return dockerImageName;
     }
 
+    /**
+     * utility method which sets up the environment required to build up an
+     * Apache Tomcat based Docker image for the selected web-artifact
+     * @param filePath          path to the web-artifact
+     * @throws IOException
+     */
     private void setupEnvironment(Path filePath) throws IOException {
         Path parentDirectory = filePath.getParent();
         File dockerFile;
@@ -97,7 +138,7 @@ public class JavaWebArtifactImageBuilder implements IDockerImageBuilder {
             boolean created = dockerFile.createNewFile();
             if(created) {
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("New Dockerfile created for " + filePath.toString());
+                    LOG.debug("New Dockerfile created for " + filePath.toString() + ".");
                 }
             }
         }
@@ -115,14 +156,24 @@ public class JavaWebArtifactImageBuilder implements IDockerImageBuilder {
         setWebAppDockerFile(dockerFile, baseDockerFileContent);
     }
 
-    private void setWebAppDockerFile(File dockerFilePath, List<String> data) {
-        FileOutputThread outputThread = new FileOutputThread(dockerFilePath.getAbsolutePath()
+    /**
+     * utility method which writes content to an external file
+     * @param filePath      path to the file to which content are to be written
+     * @param data          content to be written to the file
+     */
+    private void setWebAppDockerFile(File filePath, List<String> data) {
+        FileOutputThread outputThread = new FileOutputThread(filePath.getAbsolutePath()
                 , data);
         outputThread.run();
     }
 
+    /**
+     * returns a String list of base content to be written to the Apache
+     * Tomcat based Dockerfile
+     * @return base content to be written to the Apache Tomcat based Dockerfile
+     */
     private List<String> getDockerFileContent() {
-        List<String> baseContent = new ArrayList<String>();
+        List<String> baseContent = new ArrayList<>();
 
         baseContent.add("FROM tomcat");
         baseContent.add("MAINTAINER user");
@@ -131,9 +182,16 @@ public class JavaWebArtifactImageBuilder implements IDockerImageBuilder {
         return baseContent;
     }
 
+    /**
+     * utility method which generates a Docker image name
+     * @param creator           creator of the Docker image
+     * @param imageName         name of the Docker image name
+     * @param imageVersion      deployed version of the image
+     * @return Docker image identifier based on the data provided
+     */
     private String generateImageIdentifier(String creator, String imageName, String imageVersion) {
         String imageIdentifier;
-        if(imageVersion == null) {
+        if((imageVersion == null) || (imageVersion.equals(""))) {
             imageIdentifier = creator + "/" + imageName + ":latest";
         }
         else {

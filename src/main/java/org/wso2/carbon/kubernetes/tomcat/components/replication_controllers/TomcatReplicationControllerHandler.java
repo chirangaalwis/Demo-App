@@ -18,8 +18,8 @@ package org.wso2.carbon.kubernetes.tomcat.components.replication_controllers;
 import io.fabric8.kubernetes.api.KubernetesClient;
 import io.fabric8.kubernetes.api.KubernetesFactory;
 import io.fabric8.kubernetes.api.model.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.wso2.carbon.kubernetes.tomcat.components.replication_controllers.interfaces.ITomcatReplicationControllerHandler;
 import org.wso2.carbon.kubernetes.tomcat.support.KubernetesConstantsExtended;
 import org.wso2.carbon.exceptions.WebArtifactHandlerException;
@@ -35,8 +35,7 @@ import java.util.Map;
 public class TomcatReplicationControllerHandler implements ITomcatReplicationControllerHandler {
 
     private final KubernetesClient client;
-
-    private static final Log LOG = LogFactory.getLog(TomcatReplicationControllerHandler.class);
+    private static final Logger LOG = LogManager.getLogger(TomcatReplicationControllerHandler.class);
 
     public TomcatReplicationControllerHandler(String uri) {
         client = new KubernetesClient(new KubernetesFactory(uri));
@@ -45,6 +44,7 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
     public void createReplicationController(String controllerName, String podLabel, String tomcatDockerImageName,
             int numberOfReplicas) throws WebArtifactHandlerException {
         try {
+
             if(LOG.isDebugEnabled()) {
                 String message = String.format("Creating Kubernetes replication controller"
                                 + " [controller-name] %s [pod-label] %s "
@@ -88,7 +88,16 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
             replicationControllerSpec.setSelector(selectors);
             replicationController.setSpec(replicationControllerSpec);
 
-            client.createReplicationController(replicationController);
+            client.createReplicationController(replicationController, "default");
+
+            if(LOG.isDebugEnabled()) {
+                String message = String.format("Created Kubernetes replication controller"
+                                + " [controller-name] %s [pod-label] %s "
+                                + "[pod-Docker-image-name] %s", controllerName, podLabel,
+                        tomcatDockerImageName);
+                LOG.debug(message);
+            }
+
         } catch (Exception e) {
             String message = String.format("Could not create the replication controller[rc-identifier]: "
                     + "%s", controllerName);
@@ -99,7 +108,20 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
 
     public void deleteReplicationController(String controllerName) throws WebArtifactHandlerException {
         try {
+
+            if(LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Deleting Kubernetes replication controller"
+                                + " [rc-name] %s",
+                        controllerName));
+            }
+
             client.deleteReplicationController(controllerName);
+
+            if(LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Deleting Kubernetes replication controller"
+                                + " [rc-name] %s",
+                        controllerName));
+            }
         } catch (Exception e) {
             String message = String.format("Could not delete the replication controller[rc-identifier]: "
                     + "%s", controllerName);

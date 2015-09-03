@@ -80,13 +80,15 @@ public class WebArtifactHandler implements IWebArtifactHandler {
         }
     }
 
-    public String getAccessIPs(String tenant, String appName) throws WebArtifactHandlerException {
+    public String getAccessIPs(String tenant, String appName, Path artifactPath)
+            throws WebArtifactHandlerException {
         String ipMessage;
         TomcatServiceHandler tomcatServiceHandler = (TomcatServiceHandler) serviceHandler;
 
         ipMessage = String.format("Cluster IP: %s\nNodePort: %s\n\n",
-                tomcatServiceHandler.getClusterIP(generateKubernetesComponentName(tenant, appName)),
-                tomcatServiceHandler.getNodePort());
+                tomcatServiceHandler.getClusterIP(generateKubernetesComponentName(tenant, appName),
+                        getArtifactName(artifactPath)),
+                tomcatServiceHandler.getNodePort(getArtifactName(artifactPath)));
 
         return ipMessage;
     }
@@ -94,4 +96,10 @@ public class WebArtifactHandler implements IWebArtifactHandler {
     private String generateKubernetesComponentName(String tenant, String appName) {
         return appName + "-" + tenant;
     }
+
+    private String getArtifactName(Path artifactPath) {
+        String artifactFileName = artifactPath.getFileName().toString();
+        return artifactFileName.substring(0, artifactFileName.length() - 4);
+    }
+
 }

@@ -15,8 +15,8 @@
 */
 package org.wso2.carbon.kubernetes.tomcat.components.services;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.stratos.kubernetes.client.KubernetesApiClient;
 import org.apache.stratos.kubernetes.client.KubernetesConstants;
 import org.apache.stratos.kubernetes.client.exceptions.KubernetesClientException;
@@ -32,10 +32,10 @@ import java.util.List;
 
 public class TomcatServiceHandler implements ITomcatServiceHandler {
 
+    // holds the next available, valid port allocation for NodePort
     private static int nodePortValue;
     private final KubernetesAPIClientInterface client;
-
-    private static final Log LOG = LogFactory.getLog(TomcatServiceHandler.class);
+    private static final Logger LOG = LogManager.getLogger(TomcatServiceHandler.class);
 
     public TomcatServiceHandler(String uri) {
         client = new KubernetesApiClient(uri);
@@ -46,11 +46,25 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
         FileOutputThread fileOutput;
 
         try {
+
+            if(LOG.isDebugEnabled()) {
+                String message = String.format("Creating Kubernetes service"
+                                + " [service-ID] %s [service-name] %s ", serviceId, serviceName);
+                LOG.debug(message);
+            }
+
             client.createService(serviceId, serviceName, nodePortValue, KubernetesConstants.NODE_PORT,
                     KubernetesConstantsExtended.SERVICE_PORT_NAME,
                     KubernetesConstantsExtended.TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT,
                     KubernetesConstantsExtended.SESSION_AFFINITY_CONFIG);
 
+            if(LOG.isDebugEnabled()) {
+                String message = String.format("Created Kubernetes service"
+                        + " [service-ID] %s [service-name] %s ", serviceId, serviceName);
+                LOG.debug(message);
+            }
+
+            // changing the NodePort service type port value to the next available port value
             if(nodePortValue < (KubernetesConstantsExtended.NODE_PORT_UPPER_LIMIT)) {
                 nodePortValue++;
             }
@@ -59,9 +73,8 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
             }
 
             // write the next possible port allocation value to a text file
-            List<String> output = new ArrayList<String>();
+            List<String> output = new ArrayList<>();
             output.add("" + nodePortValue);
-
             fileOutput = new
                     FileOutputThread(KubernetesConstantsExtended.NODE_PORT_ALLOCATION_FILENAME, output);
             fileOutput.run();
@@ -73,11 +86,18 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
         }
     }
 
-    public String getClusterIP(String serviceId) throws WebArtifactHandlerException {
+    /**
+     * returns access URL String value of the Cluster IP service specified by the service ID
+     * @param serviceId         id of the service
+     * @param appName           name of the web artifact deployed
+     * @return access URL String value of the Cluster IP service specified by the service ID
+     * @throws WebArtifactHandlerException
+     */
+    public String getClusterIP(String serviceId, String appName) throws WebArtifactHandlerException {
         try {
-            return String.format("http://%s:%d",
+            return String.format("http://%s:%d/%s",
                     client.getService(serviceId).getSpec().getClusterIP(),
-                    KubernetesConstantsExtended.TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT);
+                    KubernetesConstantsExtended.TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT, appName);
         } catch (KubernetesClientException e) {
             String message = String.format("Could not find the service[service-identifier] "
                     + "cluster ip: %s", serviceId);
@@ -86,15 +106,33 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
         }
     }
 
-    public String getNodePort() {
+    /**
+     * returns access URL String value of the NodePort service most recently created
+     * @param appName           name of the web artifact deployed
+     * @return access URL String value of the NodePort service most recently created
+     */
+    public String getNodePort(String appName) {
         int previousNodePort = (nodePortValue - 1);
-        return String.format("http://%s:%d",
-                KubernetesConstantsExtended.LOCALHOST_NODE_IP, previousNodePort);
+        return String.format("http://%s:%d/%s",
+                KubernetesConstantsExtended.LOCALHOST_NODE_IP, previousNodePort, appName);
     }
 
     public void deleteService(String serviceId) throws WebArtifactHandlerException {
         try {
+
+            if(LOG.isDebugEnabled()) {
+                String message = String.format("Deleting Kubernetes service"
+                        + " [service-ID] %s", serviceId);
+                LOG.debug(message);
+            }
+
             client.deleteService(serviceId);
+
+            if(LOG.isDebugEnabled()) {
+                String message = String.format("Deleted Kubernetes service"
+                        + " [service-ID] %s", serviceId);
+                LOG.debug(message);
+            }
         } catch (KubernetesClientException e) {
             String message = String.format("Could not delete the service[service-identifier]: "
                     + "%s", serviceId);
@@ -103,6 +141,10 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
         }
     }
 
+    /**
+     * reads in the next available NodePort service type, port allocation value and assigns
+     * the value to nodePortValue-TomcatServiceHandler class member variable
+     */
     private void setInitNodePortValue() {
         FileInputThread fileInput = new FileInputThread(KubernetesConstantsExtended.NODE_PORT_ALLOCATION_FILENAME);
 
