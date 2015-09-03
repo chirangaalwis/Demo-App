@@ -2,8 +2,36 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11a3db7a-7667-4bb7-b29f-ae11464a13fe" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/test-classes/org/wso2/carbon/docker/images/DockerImageTestConstants.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/test-classes/org/wso2/carbon/docker/images/DockerImageTester.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/Executor.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/kubernetes/tomcat/support/FileInput.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/kubernetes/tomcat/support/FileInputThread.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/docker/support/FileOutput.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/docker/support/FileOutputThread.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/docker/interfaces/IDockerImageBuilder.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/kubernetes/tomcat/components/pods/interfaces/ITomcatPodHandler.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/kubernetes/tomcat/components/replication_controllers/interfaces/ITomcatReplicationControllerHandler.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/kubernetes/tomcat/components/services/interfaces/ITomcatServiceHandler.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/webartifact/interfaces/IWebArtifactHandler.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/docker/JavaWebArtifactImageBuilder.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/kubernetes/tomcat/support/KubernetesConstantsExtended.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/test-classes/org/wso2/carbon/kubernetes/tomcat/KubernetesTestConstants.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/test-classes/org/wso2/carbon/kubernetes/tomcat/KubernetesTester.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/kubernetes/tomcat/components/pods/TomcatPodHandler.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/kubernetes/tomcat/components/replication_controllers/TomcatReplicationControllerHandler.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/kubernetes/tomcat/components/services/TomcatServiceHandler.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/webartifact/WebArtifactHandler.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/org/wso2/carbon/exceptions/WebArtifactHandlerException.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/test-classes/org/wso2/carbon/webartifact/WebArtifactTestConstants.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/test-classes/org/wso2/carbon/webartifact/WebArtifactTester.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/java-web-artifact-handler-1.0-SNAPSHOT.jar" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/uber-java-web-artifact-handler-1.0-SNAPSHOT.jar" />
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_logging_log4j_log4j_api_2_3.xml" />
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_logging_log4j_log4j_core_2_3.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/resources/log4j2.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/classes/log4j2.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/target/maven-archiver/pom.properties" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/org/wso2/carbon/Executor.java" afterPath="$PROJECT_DIR$/src/main/java/org/wso2/carbon/Executor.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Java-Kubernetes-Web-Artifact-Handler.iml" afterPath="$PROJECT_DIR$/Java-Kubernetes-Web-Artifact-Handler.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/org/wso2/carbon/docker/JavaWebArtifactImageBuilder.java" afterPath="$PROJECT_DIR$/src/main/java/org/wso2/carbon/docker/JavaWebArtifactImageBuilder.java" />
