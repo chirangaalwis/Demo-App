@@ -39,9 +39,8 @@ public interface ITomcatReplicationControllerHandler {
      *
      * @param controllerName name of the replication controller
      * @return a replication controller corresponding to the controller name
-     * @throws WebArtifactHandlerException
      */
-    ReplicationController getReplicationController(String controllerName) throws WebArtifactHandlerException;
+    ReplicationController getReplicationController(String controllerName);
 
     /**
      * returns the number of replica pods that has been already deployed
@@ -59,7 +58,16 @@ public interface ITomcatReplicationControllerHandler {
      * @param newReplicas    new number of replicas
      * @throws WebArtifactHandlerException
      */
-    void changeNoOfReplicas(String controllerName, int newReplicas) throws WebArtifactHandlerException;
+    void updateNoOfReplicas(String controllerName, int newReplicas) throws WebArtifactHandlerException;
+
+    /**
+     * set a new Docker image to a specified replication controller
+     *
+     * @param controllerName name of the replication controller
+     * @param dockerImage    new Docker image
+     * @throws WebArtifactHandlerException
+     */
+    void updateImage(String controllerName, String dockerImage) throws WebArtifactHandlerException;
 
     /**
      * deletes the specified replication controller

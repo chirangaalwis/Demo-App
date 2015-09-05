@@ -38,7 +38,7 @@ public interface IWebArtifactHandler {
             throws WebArtifactHandlerException;
 
     /**
-     * rolls back to an existing, older version of the web artifact build
+     * rolls back or forward to an existing version of the web artifact build
      *
      * @param tenant          name of the tenant
      * @param appName         name of the app
@@ -46,7 +46,7 @@ public interface IWebArtifactHandler {
      * @param buildIdentifier identifier of web artifact build to be newly deployed
      * @throws WebArtifactHandlerException
      */
-    void rollBack(String tenant, String appName, String version, String buildIdentifier)
+    void rollingUpdate(String tenant, String appName, String version, String buildIdentifier)
             throws WebArtifactHandlerException;
 
     /**
@@ -83,17 +83,31 @@ public interface IWebArtifactHandler {
             throws WebArtifactHandlerException;
 
     /**
-     * returns a list of web artifact build versions under the specified
-     * repo and version which are minor to the currently running build version
+     * returns a list of web artifact build (sub) versions under the specified
+     * repo and version which are higher than the currently running build version
      *
      * @param tenant  tenant which deploys the web artifact
      * @param appName name of the web artifact
-     * @param version major version of the web artifact
-     * @return list of web artifact build versions under the specified repo and version which
-     * are minor to the currently running build version
+     * @param version version of the web artifact
+     * @return a list of web artifact build (sub) versions under the specified
+     * repo and version which are higher than the currently running build version
      * @throws WebArtifactHandlerException
      */
-    List<String> listMinorBuildArtifactVersions(String tenant, String appName, String version)
+    List<String> listHigherBuildArtifactVersions(String tenant, String appName, String version)
+            throws WebArtifactHandlerException;
+
+    /**
+     * returns a list of web artifact build (sub) versions under the specified
+     * repo and version which are lower than the currently running build version
+     *
+     * @param tenant  tenant which deploys the web artifact
+     * @param appName name of the web artifact
+     * @param version version of the web artifact
+     * @return a list of web artifact build (sub) versions under the specified
+     * repo and version which are lower than the currently running build version
+     * @throws WebArtifactHandlerException
+     */
+    List<String> listLowerBuildArtifactVersions(String tenant, String appName, String version)
             throws WebArtifactHandlerException;
 
     /**

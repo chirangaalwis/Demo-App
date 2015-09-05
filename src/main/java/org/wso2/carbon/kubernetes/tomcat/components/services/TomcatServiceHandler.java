@@ -15,6 +15,7 @@
 */
 package org.wso2.carbon.kubernetes.tomcat.components.services;
 
+import io.fabric8.kubernetes.api.model.Service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.stratos.kubernetes.client.KubernetesApiClient;
@@ -46,43 +47,64 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
         FileOutputThread fileOutput;
 
         try {
+            Service service = getService(serviceId);
+            if (service == null) {
+                if (LOG.isDebugEnabled()) {
+                    String message = String
+                            .format("Creating Kubernetes service" + " [service-ID] %s [service-name] %s ", serviceId,
+                                    serviceName);
+                    LOG.debug(message);
+                }
 
-            if (LOG.isDebugEnabled()) {
-                String message = String
-                        .format("Creating Kubernetes service" + " [service-ID] %s [service-name] %s ", serviceId,
-                                serviceName);
-                LOG.debug(message);
+                client.createService(serviceId, serviceName, nodePortValue, KubernetesConstants.NODE_PORT,
+                        KubernetesConstantsExtended.SERVICE_PORT_NAME,
+                        KubernetesConstantsExtended.TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT,
+                        KubernetesConstantsExtended.SESSION_AFFINITY_CONFIG);
+
+                if (LOG.isDebugEnabled()) {
+                    String message = String
+                            .format("Created Kubernetes service" + " [service-ID] %s [service-name] %s ", serviceId,
+                                    serviceName);
+                    LOG.debug(message);
+                }
+
+                // changing the NodePort service type port value to the next available port value
+                if (nodePortValue < (KubernetesConstantsExtended.NODE_PORT_UPPER_LIMIT)) {
+                    nodePortValue++;
+                } else {
+                    nodePortValue = KubernetesConstantsExtended.NODE_PORT_LOWER_LIMIT + 1;
+                }
+
+                // write the next possible port allocation value to a text file
+                List<String> output = new ArrayList<>();
+                output.add("" + nodePortValue);
+                fileOutput = new FileOutputThread(KubernetesConstantsExtended.NODE_PORT_ALLOCATION_FILENAME, output);
+                fileOutput.run();
             }
-
-            client.createService(serviceId, serviceName, nodePortValue, KubernetesConstants.NODE_PORT,
-                    KubernetesConstantsExtended.SERVICE_PORT_NAME,
-                    KubernetesConstantsExtended.TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT,
-                    KubernetesConstantsExtended.SESSION_AFFINITY_CONFIG);
-
-            if (LOG.isDebugEnabled()) {
-                String message = String
-                        .format("Created Kubernetes service" + " [service-ID] %s [service-name] %s ", serviceId,
-                                serviceName);
-                LOG.debug(message);
-            }
-
-            // changing the NodePort service type port value to the next available port value
-            if (nodePortValue < (KubernetesConstantsExtended.NODE_PORT_UPPER_LIMIT)) {
-                nodePortValue++;
-            } else {
-                nodePortValue = KubernetesConstantsExtended.NODE_PORT_LOWER_LIMIT + 1;
-            }
-
-            // write the next possible port allocation value to a text file
-            List<String> output = new ArrayList<>();
-            output.add("" + nodePortValue);
-            fileOutput = new FileOutputThread(KubernetesConstantsExtended.NODE_PORT_ALLOCATION_FILENAME, output);
-            fileOutput.run();
         } catch (KubernetesClientException e) {
             String message = String.format("Could not create the service[service-identifier]: " + "%s", serviceId);
             LOG.error(message, e);
             throw new WebArtifactHandlerException(message, e);
         }
+    }
+
+    public Service getService(String serviceId) throws WebArtifactHandlerException {
+        Service service = null;
+        try {
+            List<Service> services = client.getServices();
+            for (Service tempService : services) {
+                if (tempService.getMetadata().getName().equals(serviceId)) {
+                    service = tempService;
+                    break;
+                }
+            }
+        } catch (KubernetesClientException e) {
+            String message = String.format("Could not create the service[service-identifier]: " + "%s", serviceId);
+            LOG.error(message, e);
+            throw new WebArtifactHandlerException(message, e);
+        }
+
+        return service;
     }
 
     public String getClusterIP(String serviceId, String appName) throws WebArtifactHandlerException {
@@ -97,24 +119,32 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
         }
     }
 
-    public String getNodePortIP(String appName) {
-        int previousNodePort = (nodePortValue - 1);
-        return String
-                .format("http://%s:%d/%s", KubernetesConstantsExtended.LOCALHOST_NODE_IP, previousNodePort, appName);
+    public String getNodePortIP(String serviceId, String appName) throws WebArtifactHandlerException {
+        int nodePort;
+        try {
+            final int portIndex = 0;
+            nodePort = client.getService(serviceId).getSpec().getPorts().get(portIndex).getNodePort();
+        } catch (KubernetesClientException e) {
+            String message = String.format("Could not find the service[service-identifier] cluster ip: %s", serviceId);
+            LOG.error(message, e);
+            throw new WebArtifactHandlerException(message, e);
+        }
+        return String.format("http://%s:%d/%s", KubernetesConstantsExtended.LOCALHOST_NODE_IP, nodePort, appName);
     }
 
     public void deleteService(String serviceId) throws WebArtifactHandlerException {
         try {
-            if (LOG.isDebugEnabled()) {
-                String message = String.format("Deleting Kubernetes service" + " [service-ID] %s", serviceId);
-                LOG.debug(message);
-            }
-
-            client.deleteService(serviceId);
-
-            if (LOG.isDebugEnabled()) {
-                String message = String.format("Deleted Kubernetes service" + " [service-ID] %s", serviceId);
-                LOG.debug(message);
+            Service service = getService(serviceId);
+            if (service != null) {
+                if (LOG.isDebugEnabled()) {
+                    String message = String.format("Deleting Kubernetes service" + " [service-ID] %s", serviceId);
+                    LOG.debug(message);
+                }
+                client.deleteService(serviceId);
+                if (LOG.isDebugEnabled()) {
+                    String message = String.format("Deleted Kubernetes service" + " [service-ID] %s", serviceId);
+                    LOG.debug(message);
+                }
             }
         } catch (KubernetesClientException e) {
             String message = String.format("Could not delete the service[service-identifier]: " + "%s", serviceId);

@@ -91,7 +91,8 @@ public class JavaWebArtifactImageHandler implements IDockerImageHandler {
         return dockerImageName;
     }
 
-    public Image getExistingImage(String creator, String imageName, String version) throws WebArtifactHandlerException {
+    public List<Image> getExistingImages(String creator, String imageName, String version) throws WebArtifactHandlerException {
+        List<Image> matchingImageList = new ArrayList<>();
         ImmutableList<String> tags;
         String imageIdentifier = creator + "/" + imageName + ":" + version;
         try {
@@ -100,7 +101,7 @@ public class JavaWebArtifactImageHandler implements IDockerImageHandler {
                 tags = image.repoTags();
                 for (String tag : tags) {
                     if (tag.contains(imageIdentifier)) {
-                        return image;
+                        matchingImageList.add(image);
                     }
                 }
             }
@@ -109,7 +110,8 @@ public class JavaWebArtifactImageHandler implements IDockerImageHandler {
             LOG.error(message, exception);
             throw new WebArtifactHandlerException(message, exception);
         }
-        return null;
+
+        return matchingImageList;
     }
 
     public String removeImage(String creator, String imageName, String imageVersion)

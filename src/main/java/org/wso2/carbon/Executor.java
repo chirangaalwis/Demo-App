@@ -154,21 +154,43 @@ public class Executor {
             showMenu(webArtifactHandler.getServiceAccessIPs(tenant, appName, artifactPath));
             break;
         case 2:
-            // TODO: process roll updates
+            inputs = gatherIdentifierData();
+            tenant = (String) inputs.get("tenant");
+            appName = (String) inputs.get("app");
+            version = (String) inputs.get("version");
+            List<String> displayHigherList = webArtifactHandler
+                    .listHigherBuildArtifactVersions(tenant, appName, version);
+            String userChoice;
+            if (displayHigherList.size() > 0) {
+                displayList(displayHigherList);
+
+                // TODO: to be tested
+                do {
+                    showMenu("Enter your choice: ");
+                    userChoice = SCANNER.nextLine();
+                }
+                while(!displayHigherList.contains(userChoice));
+                webArtifactHandler.rollingUpdate(tenant, appName, version, userChoice);
+            } else {
+                showMenu("No higher web app build versions.\n");
+            }
             break;
         case 3:
             inputs = gatherIdentifierData();
             tenant = (String) inputs.get("tenant");
             appName = (String) inputs.get("app");
             version = (String) inputs.get("version");
-            List<String> displayList = webArtifactHandler.listMinorBuildArtifactVersions(tenant, appName, version);
-            if (displayList.size() > 0) {
-                displayList(displayList);
-                showMenu("Enter your choice: ");
-                String userChoice = SCANNER.nextLine();
-                webArtifactHandler.rollBack(tenant, appName, version, userChoice);
+            List<String> displayLowerList = webArtifactHandler.listLowerBuildArtifactVersions(tenant, appName, version);
+            if (displayLowerList.size() > 0) {
+                displayList(displayLowerList);
+                do {
+                    showMenu("Enter your choice: ");
+                    userChoice = SCANNER.nextLine();
+                }
+                while(!displayLowerList.contains(userChoice));
+                webArtifactHandler.rollingUpdate(tenant, appName, version, userChoice);
             } else {
-                showMenu("No minor web app build versions.\n");
+                showMenu("No lower web app build versions.\n");
             }
             break;
         case 4:

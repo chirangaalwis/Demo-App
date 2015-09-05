@@ -31,14 +31,17 @@ public class DockerImageTester {
             /*imageBuilder.removeImage(DockerImageTestConstants.TENANT_NAME, DockerImageTestConstants.APP_NAME,
                     DockerImageTestConstants.VERSION);*/
 
-            Image image = imageBuilder.getExistingImage(DockerImageTestConstants.TENANT_NAME,
+            /*Image image = imageBuilder.getExistingImage(DockerImageTestConstants.TENANT_NAME,
                     DockerImageTestConstants.APP_NAME, DockerImageTestConstants.VERSION);
             for(String tag : image.repoTags()) {
                 if(tag.compareTo("carbon-com/app:1.0-2015-9-2-48838328") < 0) {
                     System.out.print(tag);
                     System.out.println();
                 }
-            }
+            }*/
+
+
+
 //            System.out.println(imageBuilder.getExistingImageList(DockerImageTestConstants.TENANT_NAME, DockerImageTestConstants.APP_NAME).size());
         } catch (WebArtifactHandlerException e) {
             e.printStackTrace();

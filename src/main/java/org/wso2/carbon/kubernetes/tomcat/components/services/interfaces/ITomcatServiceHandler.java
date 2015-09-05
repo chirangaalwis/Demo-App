@@ -15,6 +15,7 @@
 */
 package org.wso2.carbon.kubernetes.tomcat.components.services.interfaces;
 
+import io.fabric8.kubernetes.api.model.Service;
 import org.wso2.carbon.exceptions.WebArtifactHandlerException;
 
 public interface ITomcatServiceHandler {
@@ -26,6 +27,15 @@ public interface ITomcatServiceHandler {
      * @throws WebArtifactHandlerException
      */
     void createService(String serviceId, String serviceName) throws WebArtifactHandlerException;
+
+    /**
+     * returns a service corresponding to the service id
+     *
+     * @param serviceId id of the service
+     * @return a service corresponding to the service id
+     * @throws WebArtifactHandlerException
+     */
+    Service getService(String serviceId) throws WebArtifactHandlerException;
 
     /**
      * returns access URL String value of the Cluster IP service specified by the service ID
@@ -40,10 +50,12 @@ public interface ITomcatServiceHandler {
     /**
      * returns access URL String value of the NodePort service most recently created
      *
-     * @param appName name of the web artifact deployed
+     * @param serviceId id of the service
+     * @param appName   name of the web artifact deployed
      * @return access URL String value of the NodePort service most recently created
+     * @throws WebArtifactHandlerException
      */
-    String getNodePortIP(String appName);
+    String getNodePortIP(String serviceId, String appName) throws WebArtifactHandlerException;
 
     /**
      * removes the specified Kubernetes service

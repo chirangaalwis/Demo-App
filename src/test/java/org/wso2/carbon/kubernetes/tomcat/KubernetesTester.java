@@ -38,12 +38,12 @@ public class KubernetesTester {
 //            replicationControllerHandler.
 //                    createReplicationController("sample-rc", "helloworld", "carbon-com/app:1.0-2015-9-5-51489680", 3);
 
-//            System.out.println(replicationControllerHandler.getNoOfReplicas("sample-rc"));
-//
-//            replicationControllerHandler.changeNoOfReplicas("sample-rc", 4);
-//            System.out.println(replicationControllerHandler.getNoOfReplicas("sample-rc"));
+            System.out.println(replicationControllerHandler.getNoOfReplicas("sample-rc"));
 
-            replicationControllerHandler.deleteReplicationController("sample-rc");
+            replicationControllerHandler.updateNoOfReplicas("sample-rc", 4);
+            System.out.println(replicationControllerHandler.getNoOfReplicas("sample-rc"));
+
+//            replicationControllerHandler.deleteReplicationController("sample-rc");
 
         } catch (WebArtifactHandlerException e) {
             e.printStackTrace();

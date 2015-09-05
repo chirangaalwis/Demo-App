@@ -19,6 +19,7 @@ import com.spotify.docker.client.messages.Image;
 import org.wso2.carbon.exceptions.WebArtifactHandlerException;
 
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * a Java interface for handling web artifact deployment in Docker Images
@@ -39,16 +40,16 @@ public interface IDockerImageHandler {
             throws WebArtifactHandlerException;
 
     /**
-     * returns an image from existing Docker images specified by the creator,
+     * returns a list images from existing Docker images specified by the creator,
      * image name and image version
      *
      * @param creator   the name of the deployer
      * @param imageName the Docker image identifier
      * @param version   the Docker image version
-     * @return an image from existing Docker images specified by the creator,
+     * @return a list images from existing Docker images specified by the creator,
      * image name and image version
      */
-    Image getExistingImage(String creator, String imageName, String version) throws WebArtifactHandlerException;
+    List<Image> getExistingImages(String creator, String imageName, String version) throws WebArtifactHandlerException;
 
     /**
      * deletes the specified Docker image

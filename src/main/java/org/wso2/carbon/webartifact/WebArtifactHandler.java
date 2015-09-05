@@ -15,6 +15,7 @@
 */
 package org.wso2.carbon.webartifact;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.docker.JavaWebArtifactImageHandler;
@@ -67,30 +68,15 @@ public class WebArtifactHandler implements IWebArtifactHandler {
         }
     }
 
-    public void rollBack(String tenant, String appName, String version, String buildIdentifier)
+    public void rollingUpdate(String tenant, String appName, String version, String buildIdentifier)
             throws WebArtifactHandlerException {
         String componentName = generateKubernetesComponentName(tenant, appName);
-        try {
-            if (replicationControllerHandler.getReplicationController(componentName) != null) {
-                int currentReplicas = replicationControllerHandler.
-                        getReplicationController(componentName).getSpec().getReplicas();
-                replicationControllerHandler.deleteReplicationController(componentName);
-                serviceHandler.deleteService(componentName);
-                replicationControllerHandler
-                        .createReplicationController(componentName, componentName, buildIdentifier, currentReplicas);
-                serviceHandler.createService(componentName, componentName);
-            }
-        } catch (WebArtifactHandlerException exception) {
-            String message = String
-                    .format("Failed to roll back previous build " + "version[artifact-build]: %s", buildIdentifier);
-            LOG.error(message, exception);
-            throw new WebArtifactHandlerException(message, exception);
-        }
+        replicationControllerHandler.updateImage(componentName, buildIdentifier);
     }
 
     public void scale(String tenant, String appName, int noOfReplicas) throws WebArtifactHandlerException {
         String componentName = generateKubernetesComponentName(tenant, appName);
-        replicationControllerHandler.changeNoOfReplicas(componentName, noOfReplicas);
+        replicationControllerHandler.updateNoOfReplicas(componentName, noOfReplicas);
     }
 
     public int getNoOfReplicas(String tenant, String appName) throws WebArtifactHandlerException {
@@ -101,14 +87,36 @@ public class WebArtifactHandler implements IWebArtifactHandler {
     public List<String> listExistingBuildArtifacts(String tenant, String appName, String version)
             throws WebArtifactHandlerException {
         List<String> artifactList = new ArrayList<>();
-        for (String tag : imageBuilder.getExistingImage(tenant, appName, version).repoTags()) {
-            artifactList.add(tag);
+        ImmutableList<String> repoTags;
+        for(int count = 0 ;
+            count < imageBuilder.getExistingImages(tenant, appName, version).size() ; count++) {
+            repoTags = imageBuilder.getExistingImages(tenant, appName, version).get(count).repoTags();
+            for(String tag : repoTags) {
+                if(!artifactList.contains(tag)) {
+                    artifactList.add(tag);
+                }
+            }
         }
-
         return artifactList;
     }
 
-    public List<String> listMinorBuildArtifactVersions(String tenant, String appName, String version)
+    public List<String> listHigherBuildArtifactVersions(String tenant, String appName, String version)
+            throws WebArtifactHandlerException {
+        String lowerLimitVersion = replicationControllerHandler
+                .getReplicationController(generateKubernetesComponentName(tenant, appName))
+                .getSpec().getTemplate().getSpec().getContainers().get(0).getImage();
+        List<String> artifactList = listExistingBuildArtifacts(tenant, appName, version);
+        List<String> majorArtifactList = new ArrayList<>();
+        for(String artifactImageBuild : artifactList) {
+            if(artifactImageBuild.compareTo(lowerLimitVersion) > 0) {
+                majorArtifactList.add(artifactImageBuild);
+            }
+        }
+
+        return majorArtifactList;
+    }
+
+    public List<String> listLowerBuildArtifactVersions(String tenant, String appName, String version)
             throws WebArtifactHandlerException {
         String upperLimitVersion = replicationControllerHandler
                 .getReplicationController(generateKubernetesComponentName(tenant, appName))
@@ -140,11 +148,12 @@ public class WebArtifactHandler implements IWebArtifactHandler {
 
     public String getServiceAccessIPs(String tenant, String appName, Path artifactPath)
             throws WebArtifactHandlerException {
+        String componentName = generateKubernetesComponentName(tenant, appName);
         String ipMessage;
 
         ipMessage = String.format("Cluster IP: %s\nNodePort: %s\n\n", serviceHandler
                         .getClusterIP(generateKubernetesComponentName(tenant, appName), getArtifactName(artifactPath)),
-                serviceHandler.getNodePortIP(getArtifactName(artifactPath)));
+                serviceHandler.getNodePortIP(componentName, getArtifactName(artifactPath)));
 
         return ipMessage;
     }
