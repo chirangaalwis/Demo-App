@@ -45,11 +45,11 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
             int numberOfReplicas) throws WebArtifactHandlerException {
         try {
 
-            if(LOG.isDebugEnabled()) {
-                String message = String.format("Creating Kubernetes replication controller"
-                                + " [controller-name] %s [pod-label] %s "
-                                + "[pod-Docker-image-name] %s", controllerName, podLabel,
-                        tomcatDockerImageName);
+            if (LOG.isDebugEnabled()) {
+                String message = String
+                        .format("Creating Kubernetes replication controller" + " [controller-name] %s [pod-label] %s "
+                                        + "[pod-Docker-image-name] %s", controllerName, podLabel,
+                                tomcatDockerImageName);
                 LOG.debug(message);
             }
 
@@ -68,7 +68,7 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
             PodTemplateSpec podTemplateSpec = new PodTemplateSpec();
             PodSpec podSpec = new PodSpec();
 
-            List<Container> podContainers = new ArrayList<Container>();
+            List<Container> podContainers = new ArrayList<>();
             Container container = new Container();
             container.setImage(tomcatDockerImageName);
             container.setName(podLabel);
@@ -77,7 +77,7 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
 
             podTemplateSpec.setSpec(podSpec);
 
-            Map<String, String> selectors = new HashMap<String, String>();
+            Map<String, String> selectors = new HashMap<>();
             selectors.put(KubernetesConstantsExtended.LABEL_NAME, podLabel);
 
             ObjectMeta tempMeta = new ObjectMeta();
@@ -90,41 +90,71 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
 
             client.createReplicationController(replicationController, "default");
 
-            if(LOG.isDebugEnabled()) {
-                String message = String.format("Created Kubernetes replication controller"
-                                + " [controller-name] %s [pod-label] %s "
-                                + "[pod-Docker-image-name] %s", controllerName, podLabel,
-                        tomcatDockerImageName);
+            if (LOG.isDebugEnabled()) {
+                String message = String
+                        .format("Created Kubernetes replication controller" + " [controller-name] %s [pod-label] %s "
+                                        + "[pod-Docker-image-name] %s", controllerName, podLabel,
+                                tomcatDockerImageName);
                 LOG.debug(message);
             }
 
         } catch (Exception e) {
-            String message = String.format("Could not create the replication controller[rc-identifier]: "
-                    + "%s", controllerName);
+            String message = String
+                    .format("Could not create the replication controller[rc-identifier]: " + "%s", controllerName);
             LOG.error(message, e);
             throw new WebArtifactHandlerException(message, e);
         }
     }
 
+    public ReplicationController getReplicationController(String controllerName) throws WebArtifactHandlerException {
+        ReplicationController controller = null;
+        String controllerId;
+        List<ReplicationController> replicationControllers = client.getReplicationControllers().getItems();
+        for (ReplicationController replicationController : replicationControllers) {
+            controllerId = replicationController.getMetadata().getName();
+            if (controllerName.equals(controllerId)) {
+                controller = replicationController;
+                break;
+            }
+        }
+
+        return controller;
+    }
+
+    public int getNoOfReplicas(String controllerName) throws WebArtifactHandlerException {
+        ReplicationController replicationController = getReplicationController(controllerName);
+
+        if (replicationController != null) {
+            return replicationController.getSpec().getReplicas();
+        } else {
+            return 0;
+        }
+    }
+
+    public void changeNoOfReplicas(String controllerName, int newReplicas) throws WebArtifactHandlerException {
+        ReplicationController replicationController = getReplicationController(controllerName);
+
+        if (replicationController != null) {
+            if ((replicationController.getSpec().getReplicas() != newReplicas) && (newReplicas > 0)) {
+                replicationController.getSpec().setReplicas(newReplicas);
+            }
+        }
+    }
+
     public void deleteReplicationController(String controllerName) throws WebArtifactHandlerException {
         try {
-
-            if(LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Deleting Kubernetes replication controller"
-                                + " [rc-name] %s",
-                        controllerName));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        String.format("Deleting Kubernetes replication controller" + " [rc-name] %s", controllerName));
             }
-
             client.deleteReplicationController(controllerName);
-
-            if(LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Deleting Kubernetes replication controller"
-                                + " [rc-name] %s",
-                        controllerName));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        String.format("Deleting Kubernetes replication controller" + " [rc-name] %s", controllerName));
             }
         } catch (Exception e) {
-            String message = String.format("Could not delete the replication controller[rc-identifier]: "
-                    + "%s", controllerName);
+            String message = String
+                    .format("Could not delete the replication controller[rc-identifier]: " + "%s", controllerName);
             LOG.error(message, e);
             throw new WebArtifactHandlerException(message, e);
         }

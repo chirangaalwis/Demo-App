@@ -25,10 +25,11 @@ public class WebArtifactTester {
 
 //            webArtifactHandler.deploy(WebArtifactTestConstants.TENANT_NAME, WebArtifactTestConstants.APP_NAME,
 //                    WebArtifactTestConstants.WEB_APP_PATH, WebArtifactTestConstants.VERSION, 3);
-            webArtifactHandler.undeploy(WebArtifactTestConstants.TENANT_NAME, WebArtifactTestConstants.APP_NAME,
-                    WebArtifactTestConstants.WEB_APP_PATH, WebArtifactTestConstants.VERSION);
+            webArtifactHandler.remove(WebArtifactTestConstants.TENANT_NAME,
+                    WebArtifactTestConstants.APP_NAME, WebArtifactTestConstants.VERSION);
         } catch (WebArtifactHandlerException e) {
             e.printStackTrace();
         }
     }
+
 }

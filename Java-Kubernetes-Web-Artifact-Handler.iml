@@ -84,6 +84,7 @@
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-simple:1.7.12" level="project" />
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-api:2.3" level="project" />
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-core:2.3" level="project" />
+    <orderEntry type="library" name="Maven: joda-time:joda-time:2.8.2" level="project" />
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">
     <option name="_basePreferences">

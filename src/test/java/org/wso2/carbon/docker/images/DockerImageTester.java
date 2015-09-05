@@ -15,20 +15,31 @@
 */
 package org.wso2.carbon.docker.images;
 
-import org.wso2.carbon.docker.interfaces.IDockerImageBuilder;
-import org.wso2.carbon.docker.JavaWebArtifactImageBuilder;
+import com.spotify.docker.client.messages.Image;
+import org.wso2.carbon.docker.interfaces.IDockerImageHandler;
+import org.wso2.carbon.docker.JavaWebArtifactImageHandler;
 import org.wso2.carbon.exceptions.WebArtifactHandlerException;
 
 public class DockerImageTester {
 
     public static void main(String[] args) {
         try {
-            IDockerImageBuilder imageBuilder = new JavaWebArtifactImageBuilder();
+            IDockerImageHandler imageBuilder = new JavaWebArtifactImageHandler();
             //            imageBuilder.buildImage(DockerImageTestConstants.WEB_APP_PATH);
-            imageBuilder.buildImage(DockerImageTestConstants.TENANT_NAME, DockerImageTestConstants.APP_NAME,
-                    DockerImageTestConstants.VERSION, DockerImageTestConstants.WEB_APP_PATH);
+            /*imageBuilder.buildImage(DockerImageTestConstants.TENANT_NAME, DockerImageTestConstants.APP_NAME,
+                    DockerImageTestConstants.VERSION, DockerImageTestConstants.WEB_APP_PATH);*/
             /*imageBuilder.removeImage(DockerImageTestConstants.TENANT_NAME, DockerImageTestConstants.APP_NAME,
                     DockerImageTestConstants.VERSION);*/
+
+            Image image = imageBuilder.getExistingImage(DockerImageTestConstants.TENANT_NAME,
+                    DockerImageTestConstants.APP_NAME, DockerImageTestConstants.VERSION);
+            for(String tag : image.repoTags()) {
+                if(tag.compareTo("carbon-com/app:1.0-2015-9-2-48838328") < 0) {
+                    System.out.print(tag);
+                    System.out.println();
+                }
+            }
+//            System.out.println(imageBuilder.getExistingImageList(DockerImageTestConstants.TENANT_NAME, DockerImageTestConstants.APP_NAME).size());
         } catch (WebArtifactHandlerException e) {
             e.printStackTrace();
         }

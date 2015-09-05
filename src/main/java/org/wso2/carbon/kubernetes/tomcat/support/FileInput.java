@@ -33,17 +33,18 @@ class FileInput {
 
     /**
      * initializes the Scanner instance using the name of the file specified by the String
+     *
      * @param fileName name of the file to be used with the Scanner instance
-     * @throws IOException I/O error when opening the file
+     * @throws IOException       I/O error when opening the file
      * @throws SecurityException If a security manager denies read access to the file or directory
      */
     public void openFile(String fileName) throws IOException, SecurityException {
         File outputFile = new File(fileName);
 
         boolean exists = outputFile.exists();
-        if(!exists) {
+        if (!exists) {
             boolean created = outputFile.createNewFile();
-            if(created) {
+            if (created) {
                 LOG.debug("New file " + outputFile.getAbsolutePath() + " created.");
             }
         }
@@ -52,12 +53,13 @@ class FileInput {
 
     /**
      * returns the String data items read from the file
+     *
      * @return list of String data items read from the file
      */
     public List<String> readDataFromFile() {
-        List<String> data = new ArrayList<String>();
-        if(input != null) {
-            while(input.hasNextLine()) {
+        List<String> data = new ArrayList<>();
+        if (input != null) {
+            while (input.hasNextLine()) {
                 data.add(input.nextLine());
             }
         }
@@ -68,7 +70,7 @@ class FileInput {
      * closes the Scanner instance if the Scanner instance is not equal to null
      */
     public void closeFile() {
-        if(input != null) {
+        if (input != null) {
             input.close();
         }
     }

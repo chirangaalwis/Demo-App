@@ -47,9 +47,10 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
 
         try {
 
-            if(LOG.isDebugEnabled()) {
-                String message = String.format("Creating Kubernetes service"
-                                + " [service-ID] %s [service-name] %s ", serviceId, serviceName);
+            if (LOG.isDebugEnabled()) {
+                String message = String
+                        .format("Creating Kubernetes service" + " [service-ID] %s [service-name] %s ", serviceId,
+                                serviceName);
                 LOG.debug(message);
             }
 
@@ -58,84 +59,65 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
                     KubernetesConstantsExtended.TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT,
                     KubernetesConstantsExtended.SESSION_AFFINITY_CONFIG);
 
-            if(LOG.isDebugEnabled()) {
-                String message = String.format("Created Kubernetes service"
-                        + " [service-ID] %s [service-name] %s ", serviceId, serviceName);
+            if (LOG.isDebugEnabled()) {
+                String message = String
+                        .format("Created Kubernetes service" + " [service-ID] %s [service-name] %s ", serviceId,
+                                serviceName);
                 LOG.debug(message);
             }
 
             // changing the NodePort service type port value to the next available port value
-            if(nodePortValue < (KubernetesConstantsExtended.NODE_PORT_UPPER_LIMIT)) {
+            if (nodePortValue < (KubernetesConstantsExtended.NODE_PORT_UPPER_LIMIT)) {
                 nodePortValue++;
-            }
-            else {
+            } else {
                 nodePortValue = KubernetesConstantsExtended.NODE_PORT_LOWER_LIMIT + 1;
             }
 
             // write the next possible port allocation value to a text file
             List<String> output = new ArrayList<>();
             output.add("" + nodePortValue);
-            fileOutput = new
-                    FileOutputThread(KubernetesConstantsExtended.NODE_PORT_ALLOCATION_FILENAME, output);
+            fileOutput = new FileOutputThread(KubernetesConstantsExtended.NODE_PORT_ALLOCATION_FILENAME, output);
             fileOutput.run();
         } catch (KubernetesClientException e) {
-            String message = String.format("Could not create the service[service-identifier]: "
-                    + "%s", serviceId);
+            String message = String.format("Could not create the service[service-identifier]: " + "%s", serviceId);
             LOG.error(message, e);
             throw new WebArtifactHandlerException(message, e);
         }
     }
 
-    /**
-     * returns access URL String value of the Cluster IP service specified by the service ID
-     * @param serviceId         id of the service
-     * @param appName           name of the web artifact deployed
-     * @return access URL String value of the Cluster IP service specified by the service ID
-     * @throws WebArtifactHandlerException
-     */
     public String getClusterIP(String serviceId, String appName) throws WebArtifactHandlerException {
         try {
-            return String.format("http://%s:%d/%s",
-                    client.getService(serviceId).getSpec().getClusterIP(),
+            return String.format("http://%s:%d/%s", client.getService(serviceId).getSpec().getClusterIP(),
                     KubernetesConstantsExtended.TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT, appName);
         } catch (KubernetesClientException e) {
-            String message = String.format("Could not find the service[service-identifier] "
-                    + "cluster ip: %s", serviceId);
+            String message = String
+                    .format("Could not find the service[service-identifier] " + "cluster ip: %s", serviceId);
             LOG.error(message, e);
             throw new WebArtifactHandlerException(message, e);
         }
     }
 
-    /**
-     * returns access URL String value of the NodePort service most recently created
-     * @param appName           name of the web artifact deployed
-     * @return access URL String value of the NodePort service most recently created
-     */
-    public String getNodePort(String appName) {
+    public String getNodePortIP(String appName) {
         int previousNodePort = (nodePortValue - 1);
-        return String.format("http://%s:%d/%s",
-                KubernetesConstantsExtended.LOCALHOST_NODE_IP, previousNodePort, appName);
+        return String
+                .format("http://%s:%d/%s", KubernetesConstantsExtended.LOCALHOST_NODE_IP, previousNodePort, appName);
     }
 
     public void deleteService(String serviceId) throws WebArtifactHandlerException {
         try {
-
-            if(LOG.isDebugEnabled()) {
-                String message = String.format("Deleting Kubernetes service"
-                        + " [service-ID] %s", serviceId);
+            if (LOG.isDebugEnabled()) {
+                String message = String.format("Deleting Kubernetes service" + " [service-ID] %s", serviceId);
                 LOG.debug(message);
             }
 
             client.deleteService(serviceId);
 
-            if(LOG.isDebugEnabled()) {
-                String message = String.format("Deleted Kubernetes service"
-                        + " [service-ID] %s", serviceId);
+            if (LOG.isDebugEnabled()) {
+                String message = String.format("Deleted Kubernetes service" + " [service-ID] %s", serviceId);
                 LOG.debug(message);
             }
         } catch (KubernetesClientException e) {
-            String message = String.format("Could not delete the service[service-identifier]: "
-                    + "%s", serviceId);
+            String message = String.format("Could not delete the service[service-identifier]: " + "%s", serviceId);
             LOG.error(message, e);
             throw new WebArtifactHandlerException(message, e);
         }
@@ -151,10 +133,9 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
         fileInput.run();
         List<String> input = fileInput.getFileContent();
 
-        if(input.size() > 0) {
+        if (input.size() > 0) {
             nodePortValue = Integer.parseInt(input.get(0));
-        }
-        else {
+        } else {
             nodePortValue = KubernetesConstantsExtended.NODE_PORT_LOWER_LIMIT + 1;
         }
     }

@@ -27,12 +27,13 @@ class FileOutput {
     /**
      * method takes a single String parameter specifying the name of the file on which the
      * Formatter instance is to be used
+     *
      * @param fileName the name of the file on which the Formatter instance is to be used
      * @throws FileNotFoundException If the given file name does not denote an existing,
-     *         writable regular file and a new regular file of that name cannot be created,
-     *         or if some other error occurs while opening or creating the file
-     * @throws SecurityException If a security manager exists and denies permission to write
-     *         file
+     *                               writable regular file and a new regular file of that name cannot be created,
+     *                               or if some other error occurs while opening or creating the file
+     * @throws SecurityException     If a security manager exists and denies permission to write
+     *                               file
      */
     public void openFile(String fileName) throws FileNotFoundException, SecurityException {
         output = new Formatter(fileName);
@@ -41,11 +42,12 @@ class FileOutput {
     /**
      * writes the String data items in a list to the specified file using the Formatter
      * instance
+     *
      * @param data list of String data items to be written to the specified file
      */
     public void addDataToFile(List<String> data) {
-        if(data != null) {
-            for(String dataItem : data) {
+        if (data != null) {
+            for (String dataItem : data) {
                 output.format("%s%n", dataItem);
             }
         }
@@ -55,7 +57,7 @@ class FileOutput {
      * closes the Formatter instance if the Formatter instance is not equal to null
      */
     public void closeFile() {
-        if(output != null) {
+        if (output != null) {
             output.close();
         }
     }

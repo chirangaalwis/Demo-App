@@ -35,9 +35,15 @@ public class KubernetesTester {
             ITomcatReplicationControllerHandler replicationControllerHandler =
                     new TomcatReplicationControllerHandler(KubernetesTestConstants.ENDPOINT_URL);
 
-//            replicationControllerHandler.createReplicationController("helloworld-rc", "helloworld", "helloworld", 3);
+//            replicationControllerHandler.
+//                    createReplicationController("sample-rc", "helloworld", "carbon-com/app:1.0-2015-9-5-51489680", 3);
 
-            replicationControllerHandler.deleteReplicationController("helloworld-rc");
+//            System.out.println(replicationControllerHandler.getNoOfReplicas("sample-rc"));
+//
+//            replicationControllerHandler.changeNoOfReplicas("sample-rc", 4);
+//            System.out.println(replicationControllerHandler.getNoOfReplicas("sample-rc"));
+
+            replicationControllerHandler.deleteReplicationController("sample-rc");
 
         } catch (WebArtifactHandlerException e) {
             e.printStackTrace();

@@ -33,8 +33,7 @@ public class FileOutputThread implements Runnable {
             output.openFile(fileName);
             output.addDataToFile(dataList);
             output.closeFile();
-        }
-        catch(FileNotFoundException exception) {
+        } catch (FileNotFoundException exception) {
             exception.printStackTrace();
         }
     }

@@ -15,6 +15,7 @@
 */
 package org.wso2.carbon.kubernetes.tomcat.components.replication_controllers.interfaces;
 
+import io.fabric8.kubernetes.api.model.ReplicationController;
 import org.wso2.carbon.exceptions.WebArtifactHandlerException;
 
 /**
@@ -23,18 +24,47 @@ import org.wso2.carbon.exceptions.WebArtifactHandlerException;
 public interface ITomcatReplicationControllerHandler {
     /**
      * creates a replication controller
-     * @param controllerName            name of the replication controller
-     * @param podLabel                  value for pod label
-     * @param tomcatDockerImageName     Apache Tomcat based Docker Image name
-     * @param numberOfReplicas          number of pod replicas to be created
+     *
+     * @param controllerName        name of the replication controller
+     * @param podLabel              value for pod label
+     * @param tomcatDockerImageName Apache Tomcat based Docker Image name
+     * @param numberOfReplicas      number of pod replicas to be created
      * @throws WebArtifactHandlerException
      */
     void createReplicationController(String controllerName, String podLabel, String tomcatDockerImageName,
             int numberOfReplicas) throws WebArtifactHandlerException;
 
     /**
+     * returns a replication controller corresponding to the controller name
+     *
+     * @param controllerName name of the replication controller
+     * @return a replication controller corresponding to the controller name
+     * @throws WebArtifactHandlerException
+     */
+    ReplicationController getReplicationController(String controllerName) throws WebArtifactHandlerException;
+
+    /**
+     * returns the number of replica pods that has been already deployed
+     *
+     * @param controllerName name of the replication controller
+     * @return the number of replica pods that has been already deployed
+     * @throws WebArtifactHandlerException
+     */
+    int getNoOfReplicas(String controllerName) throws WebArtifactHandlerException;
+
+    /**
+     * set a new number of pod replicas to a specified replication controller
+     *
+     * @param controllerName name of the replication controller
+     * @param newReplicas    new number of replicas
+     * @throws WebArtifactHandlerException
+     */
+    void changeNoOfReplicas(String controllerName, int newReplicas) throws WebArtifactHandlerException;
+
+    /**
      * deletes the specified replication controller
-     * @param controllerName            name of the replication controller
+     *
+     * @param controllerName name of the replication controller
      * @throws WebArtifactHandlerException
      */
     void deleteReplicationController(String controllerName) throws WebArtifactHandlerException;

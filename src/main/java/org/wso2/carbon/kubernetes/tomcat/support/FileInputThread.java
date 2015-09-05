@@ -28,11 +28,10 @@ public class FileInputThread implements Runnable {
     }
 
     public List<String> getFileContent() {
-        if(fileContent != null) {
+        if (fileContent != null) {
             return fileContent;
-        }
-        else {
-            return new ArrayList<String>();
+        } else {
+            return new ArrayList<>();
         }
     }
 
@@ -43,8 +42,7 @@ public class FileInputThread implements Runnable {
             List<String> data = input.readDataFromFile();
             input.closeFile();
             fileContent = data;
-        }
-        catch (IOException exception) {
+        } catch (IOException exception) {
             exception.printStackTrace();
         }
     }

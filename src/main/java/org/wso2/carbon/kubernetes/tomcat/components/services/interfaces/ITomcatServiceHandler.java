@@ -20,15 +20,35 @@ import org.wso2.carbon.exceptions.WebArtifactHandlerException;
 public interface ITomcatServiceHandler {
     /**
      * creates a Kubernetes service
-     * @param serviceId         id of the service
-     * @param serviceName       service name to be used by the label name
+     *
+     * @param serviceId   id of the service
+     * @param serviceName service name to be used by the label name
      * @throws WebArtifactHandlerException
      */
     void createService(String serviceId, String serviceName) throws WebArtifactHandlerException;
 
     /**
+     * returns access URL String value of the Cluster IP service specified by the service ID
+     *
+     * @param serviceId id of the service
+     * @param appName   name of the web artifact deployed
+     * @return access URL String value of the Cluster IP service specified by the service ID
+     * @throws WebArtifactHandlerException
+     */
+    String getClusterIP(String serviceId, String appName) throws WebArtifactHandlerException;
+
+    /**
+     * returns access URL String value of the NodePort service most recently created
+     *
+     * @param appName name of the web artifact deployed
+     * @return access URL String value of the NodePort service most recently created
+     */
+    String getNodePortIP(String appName);
+
+    /**
      * removes the specified Kubernetes service
-     * @param serviceId         id of the service
+     *
+     * @param serviceId id of the service
      * @throws WebArtifactHandlerException
      */
     void deleteService(String serviceId) throws WebArtifactHandlerException;
