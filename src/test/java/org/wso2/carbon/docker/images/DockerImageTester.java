@@ -20,6 +20,8 @@ import org.wso2.carbon.docker.interfaces.IDockerImageHandler;
 import org.wso2.carbon.docker.JavaWebArtifactImageHandler;
 import org.wso2.carbon.exceptions.WebArtifactHandlerException;
 
+import java.util.List;
+
 public class DockerImageTester {
 
     public static void main(String[] args) {
@@ -31,14 +33,17 @@ public class DockerImageTester {
             /*imageBuilder.removeImage(DockerImageTestConstants.TENANT_NAME, DockerImageTestConstants.APP_NAME,
                     DockerImageTestConstants.VERSION);*/
 
-            /*Image image = imageBuilder.getExistingImage(DockerImageTestConstants.TENANT_NAME,
+            List<Image> images = imageBuilder.getExistingImages(DockerImageTestConstants.TENANT_NAME,
                     DockerImageTestConstants.APP_NAME, DockerImageTestConstants.VERSION);
-            for(String tag : image.repoTags()) {
-                if(tag.compareTo("carbon-com/app:1.0-2015-9-2-48838328") < 0) {
-                    System.out.print(tag);
-                    System.out.println();
+            for(Image image : images) {
+                System.out.println(image.id());
+
+                for(String tag : image.repoTags()) {
+                    System.out.println(tag);
                 }
-            }*/
+
+                System.out.println();
+            }
 
 
 

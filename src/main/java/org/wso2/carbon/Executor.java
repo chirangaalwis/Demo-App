@@ -53,6 +53,7 @@ public class Executor {
                 process(userChoice, webArtifactHandler);
             }
         } catch (WebArtifactHandlerException exception) {
+            exception.printStackTrace();
             System.exit(1);
         }
     }
@@ -163,13 +164,10 @@ public class Executor {
             String userChoice;
             if (displayHigherList.size() > 0) {
                 displayList(displayHigherList);
-
-                // TODO: to be tested
                 do {
                     showMenu("Enter your choice: ");
                     userChoice = SCANNER.nextLine();
-                }
-                while(!displayHigherList.contains(userChoice));
+                } while (!displayHigherList.contains(userChoice));
                 webArtifactHandler.rollingUpdate(tenant, appName, version, userChoice);
             } else {
                 showMenu("No higher web app build versions.\n");
@@ -186,8 +184,7 @@ public class Executor {
                 do {
                     showMenu("Enter your choice: ");
                     userChoice = SCANNER.nextLine();
-                }
-                while(!displayLowerList.contains(userChoice));
+                } while (!displayLowerList.contains(userChoice));
                 webArtifactHandler.rollingUpdate(tenant, appName, version, userChoice);
             } else {
                 showMenu("No lower web app build versions.\n");

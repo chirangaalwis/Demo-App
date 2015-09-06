@@ -72,6 +72,7 @@ public class WebArtifactHandler implements IWebArtifactHandler {
             throws WebArtifactHandlerException {
         String componentName = generateKubernetesComponentName(tenant, appName);
         replicationControllerHandler.updateImage(componentName, buildIdentifier);
+        podHandler.deleteReplicaPods(tenant, appName);
     }
 
     public void scale(String tenant, String appName, int noOfReplicas) throws WebArtifactHandlerException {
@@ -88,11 +89,10 @@ public class WebArtifactHandler implements IWebArtifactHandler {
             throws WebArtifactHandlerException {
         List<String> artifactList = new ArrayList<>();
         ImmutableList<String> repoTags;
-        for(int count = 0 ;
-            count < imageBuilder.getExistingImages(tenant, appName, version).size() ; count++) {
+        for (int count = 0; count < imageBuilder.getExistingImages(tenant, appName, version).size(); count++) {
             repoTags = imageBuilder.getExistingImages(tenant, appName, version).get(count).repoTags();
-            for(String tag : repoTags) {
-                if(!artifactList.contains(tag)) {
+            for (String tag : repoTags) {
+                if (tag.contains(tenant + "/" + appName + ":" + version)) {
                     artifactList.add(tag);
                 }
             }
@@ -103,12 +103,12 @@ public class WebArtifactHandler implements IWebArtifactHandler {
     public List<String> listHigherBuildArtifactVersions(String tenant, String appName, String version)
             throws WebArtifactHandlerException {
         String lowerLimitVersion = replicationControllerHandler
-                .getReplicationController(generateKubernetesComponentName(tenant, appName))
-                .getSpec().getTemplate().getSpec().getContainers().get(0).getImage();
+                .getReplicationController(generateKubernetesComponentName(tenant, appName)).getSpec().getTemplate()
+                .getSpec().getContainers().get(0).getImage();
         List<String> artifactList = listExistingBuildArtifacts(tenant, appName, version);
         List<String> majorArtifactList = new ArrayList<>();
-        for(String artifactImageBuild : artifactList) {
-            if(artifactImageBuild.compareTo(lowerLimitVersion) > 0) {
+        for (String artifactImageBuild : artifactList) {
+            if (compareBuildVersions(lowerLimitVersion, artifactImageBuild) < 0) {
                 majorArtifactList.add(artifactImageBuild);
             }
         }
@@ -119,17 +119,29 @@ public class WebArtifactHandler implements IWebArtifactHandler {
     public List<String> listLowerBuildArtifactVersions(String tenant, String appName, String version)
             throws WebArtifactHandlerException {
         String upperLimitVersion = replicationControllerHandler
-                .getReplicationController(generateKubernetesComponentName(tenant, appName))
-                .getSpec().getTemplate().getSpec().getContainers().get(0).getImage();
+                .getReplicationController(generateKubernetesComponentName(tenant, appName)).getSpec().getTemplate()
+                .getSpec().getContainers().get(0).getImage();
         List<String> artifactList = listExistingBuildArtifacts(tenant, appName, version);
         List<String> minorArtifactList = new ArrayList<>();
-        for(String artifactImageBuild : artifactList) {
-            if(artifactImageBuild.compareTo(upperLimitVersion) < 0) {
+        for (String artifactImageBuild : artifactList) {
+            if (compareBuildVersions(upperLimitVersion, artifactImageBuild) > 0) {
                 minorArtifactList.add(artifactImageBuild);
             }
         }
 
         return minorArtifactList;
+    }
+
+    public String getServiceAccessIPs(String tenant, String appName, Path artifactPath)
+            throws WebArtifactHandlerException {
+        String componentName = generateKubernetesComponentName(tenant, appName);
+        String ipMessage;
+
+        ipMessage = String.format("Cluster IP: %s\nNodePort: %s\n\n", serviceHandler
+                        .getClusterIP(generateKubernetesComponentName(tenant, appName), getArtifactName(artifactPath)),
+                serviceHandler.getNodePortIP(componentName, getArtifactName(artifactPath)));
+
+        return ipMessage;
     }
 
     public void remove(String tenant, String appName, String version) throws WebArtifactHandlerException {
@@ -144,18 +156,6 @@ public class WebArtifactHandler implements IWebArtifactHandler {
             LOG.error(message, exception);
             throw new WebArtifactHandlerException(message, exception);
         }
-    }
-
-    public String getServiceAccessIPs(String tenant, String appName, Path artifactPath)
-            throws WebArtifactHandlerException {
-        String componentName = generateKubernetesComponentName(tenant, appName);
-        String ipMessage;
-
-        ipMessage = String.format("Cluster IP: %s\nNodePort: %s\n\n", serviceHandler
-                        .getClusterIP(generateKubernetesComponentName(tenant, appName), getArtifactName(artifactPath)),
-                serviceHandler.getNodePortIP(componentName, getArtifactName(artifactPath)));
-
-        return ipMessage;
     }
 
     /**
@@ -179,6 +179,53 @@ public class WebArtifactHandler implements IWebArtifactHandler {
     private String getArtifactName(Path artifactPath) {
         String artifactFileName = artifactPath.getFileName().toString();
         return artifactFileName.substring(0, artifactFileName.length() - 4);
+    }
+
+    /**
+     * compares two web artifact version builds and indicates which version should come before and after
+     *
+     * @param buildIdentifierOne web artifact version build one
+     * @param buildIdentifierTwo web artifact version build two
+     * @return indicates which version should come before and after
+     */
+    private int compareBuildVersions(String buildIdentifierOne, String buildIdentifierTwo) {
+        int result;
+        String[] buildIdentifierOneTenantSplit = buildIdentifierOne.split(":");
+        String[] buildIdentifierTwoTenantSplit = buildIdentifierTwo.split(":");
+        String[] buildIdentifierOneIdentifierSplit = buildIdentifierOneTenantSplit[1].split("-");
+        String[] buildIdentifierTwoIdentifierSplit = buildIdentifierTwoTenantSplit[1].split("-");
+        int repoIndex = 0;
+        int versionIndex = 0;
+        int yearIndex = 1;
+        int monthIndex = 2;
+        int dayIndex = 3;
+        String identifierOne =
+                buildIdentifierOneTenantSplit[repoIndex] + ":" + buildIdentifierOneIdentifierSplit[versionIndex] +
+                        "-" + buildIdentifierOneIdentifierSplit[yearIndex] + "-"
+                        + buildIdentifierOneIdentifierSplit[monthIndex] +
+                        "-" + buildIdentifierOneIdentifierSplit[dayIndex];
+        String identifierTwo =
+                buildIdentifierTwoTenantSplit[repoIndex] + ":" + buildIdentifierTwoIdentifierSplit[versionIndex] +
+                        "-" + buildIdentifierTwoIdentifierSplit[yearIndex] + "-"
+                        + buildIdentifierTwoIdentifierSplit[monthIndex] +
+                        "-" + buildIdentifierTwoIdentifierSplit[dayIndex];
+
+        if (identifierOne.compareTo(identifierTwo) < 0) {
+            result = -1;
+        } else if (identifierOne.compareTo(identifierTwo) > 0) {
+            result = 1;
+        } else {
+            long identifierOneTime = Long.parseLong(buildIdentifierOneIdentifierSplit[4]);
+            long identifierTwoTime = Long.parseLong(buildIdentifierTwoIdentifierSplit[4]);
+            if (identifierOneTime < identifierTwoTime) {
+                result = -1;
+            } else if (identifierOneTime > identifierTwoTime) {
+                result = 1;
+            } else {
+                result = 0;
+            }
+        }
+        return result;
     }
 
 }

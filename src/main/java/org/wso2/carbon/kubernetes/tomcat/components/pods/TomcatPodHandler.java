@@ -122,8 +122,9 @@ public class TomcatPodHandler implements ITomcatPodHandler {
                 LOG.debug("Deleting Kubernetes replica pods.");
             }
             for (Pod pod : client.getPods().getItems()) {
-                if ((pod.getMetadata().getName().contains(creator)) && (pod.getMetadata().getName()
-                        .contains(podBaseName))) {
+                Map<String, String> labels = pod.getMetadata().getLabels();
+                if ((labels != null) && (pod.getMetadata().getLabels().get(KubernetesConstantsExtended.LABEL_NAME)
+                        .equals(podBaseName + "-" + creator))) {
                     client.deletePod(pod.getMetadata().getName());
                 }
             }

@@ -15,7 +15,6 @@
 */
 package org.wso2.carbon.docker;
 
-import com.google.common.collect.ImmutableList;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerCertificateException;
 import com.spotify.docker.client.DockerClient;
@@ -91,17 +90,18 @@ public class JavaWebArtifactImageHandler implements IDockerImageHandler {
         return dockerImageName;
     }
 
-    public List<Image> getExistingImages(String creator, String imageName, String version) throws WebArtifactHandlerException {
+    public List<Image> getExistingImages(String creator, String imageName, String version)
+            throws WebArtifactHandlerException {
         List<Image> matchingImageList = new ArrayList<>();
-        ImmutableList<String> tags;
         String imageIdentifier = creator + "/" + imageName + ":" + version;
         try {
             List<Image> tempImages = dockerClient.listImages();
             for (Image image : tempImages) {
-                tags = image.repoTags();
-                for (String tag : tags) {
+                for (String tag : image.repoTags()) {
                     if (tag.contains(imageIdentifier)) {
-                        matchingImageList.add(image);
+                        if (!matchingImageList.contains(image)) {
+                            matchingImageList.add(image);
+                        }
                     }
                 }
             }
