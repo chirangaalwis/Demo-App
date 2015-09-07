@@ -11,4 +11,4 @@ Maven-shade-plugin has been used to bundle up the required dependencies hence, w
 
 You can execute the following command in the commandline tool to execute the Java application:
 
-java -cp uber-java-web-artifact-handler-1.0-SNAPSHOT.jar org.wso2.carbon.Executor
+java -cp uber-java-web-artifact-handler-1.0-SNAPSHOT.jar Executor

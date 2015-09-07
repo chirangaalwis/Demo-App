@@ -9,5 +9,8 @@
         <Root level="DEBUG">
             <AppenderRef ref="LogFile"/>
         </Root>
+        <Logger name="io.fabric8.kubernetes.api" level="INFO">
+            <AppenderRef ref="LogFile"/>
+        </Logger>
     </Loggers>
 </Configuration>
