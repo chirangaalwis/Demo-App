@@ -132,6 +132,19 @@ public class Executor {
         return inputs;
     }
 
+    private static Map<String, Object> gatherUpdateData() {
+        Map<String, Object> inputs = gatherIdentifierData();
+
+        showMenu("Artifact path: ");
+        String path = SCANNER.nextLine();
+        Path artifactPath = Paths.get(path);
+
+        // Add to list of inputs
+        inputs.put("artifact", artifactPath);
+
+        return inputs;
+    }
+
     private static void process(int choice, IWebArtifactHandler webArtifactHandler) throws WebArtifactHandlerException {
         Map<String, Object> inputs;
         String tenant;
@@ -155,23 +168,18 @@ public class Executor {
             showMenu(webArtifactHandler.getServiceAccessIPs(tenant, appName, artifactPath));
             break;
         case 2:
-            inputs = gatherIdentifierData();
+            inputs = gatherUpdateData();
             tenant = (String) inputs.get("tenant");
             appName = (String) inputs.get("app");
+            // set the image version
             version = (String) inputs.get("version");
-            List<String> displayHigherList = webArtifactHandler
-                    .listHigherBuildArtifactVersions(tenant, appName, version);
-            String userChoice;
-            if (displayHigherList.size() > 0) {
-                displayList(displayHigherList);
-                do {
-                    showMenu("Enter your choice: ");
-                    userChoice = SCANNER.nextLine();
-                } while (!displayHigherList.contains(userChoice));
-                webArtifactHandler.rollingUpdate(tenant, appName, version, userChoice);
-            } else {
-                showMenu("No higher web app build versions.\n");
-            }
+            dateTime = new DateTime();
+            now = dateTime.getYear() + "-" + dateTime.getMonthOfYear() + "-" + dateTime.getDayOfMonth() + "-"
+                    + dateTime.getMillisOfDay();
+            version += ("-" + now);
+            artifactPath = (Path) inputs.get("artifact");
+            webArtifactHandler.rollUpdate(tenant, appName, version, artifactPath);
+            showMenu(webArtifactHandler.getServiceAccessIPs(tenant, appName, artifactPath));
             break;
         case 3:
             inputs = gatherIdentifierData();
@@ -181,11 +189,12 @@ public class Executor {
             List<String> displayLowerList = webArtifactHandler.listLowerBuildArtifactVersions(tenant, appName, version);
             if (displayLowerList.size() > 0) {
                 displayList(displayLowerList);
+                String userChoice;
                 do {
-                    showMenu("Enter your choice: ");
+                    showMenu("Enter the version from the above: ");
                     userChoice = SCANNER.nextLine();
                 } while (!displayLowerList.contains(userChoice));
-                webArtifactHandler.rollingUpdate(tenant, appName, version, userChoice);
+                webArtifactHandler.rollBack(tenant, appName, version, userChoice);
             } else {
                 showMenu("No lower web app build versions.\n");
             }

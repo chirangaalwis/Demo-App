@@ -31,7 +31,9 @@ import org.wso2.carbon.webartifact.interfaces.IWebArtifactHandler;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WebArtifactHandler implements IWebArtifactHandler {
 
@@ -68,10 +70,18 @@ public class WebArtifactHandler implements IWebArtifactHandler {
         }
     }
 
-    public void rollingUpdate(String tenant, String appName, String version, String buildIdentifier)
+    public void rollBack(String tenant, String appName, String version, String buildIdentifier)
             throws WebArtifactHandlerException {
         String componentName = generateKubernetesComponentName(tenant, appName);
         replicationControllerHandler.updateImage(componentName, buildIdentifier);
+        podHandler.deleteReplicaPods(tenant, appName);
+    }
+
+    public void rollUpdate(String tenant, String appName, String version, Path artifactPath)
+            throws WebArtifactHandlerException {
+        String componentName = generateKubernetesComponentName(tenant, appName);
+        String dockerImageName = imageBuilder.buildImage(tenant, appName, version, artifactPath);
+        replicationControllerHandler.updateImage(componentName, dockerImageName);
         podHandler.deleteReplicaPods(tenant, appName);
     }
 

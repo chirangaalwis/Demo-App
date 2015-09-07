@@ -46,7 +46,17 @@ public interface IWebArtifactHandler {
      * @param buildIdentifier identifier of web artifact build to be newly deployed
      * @throws WebArtifactHandlerException
      */
-    void rollingUpdate(String tenant, String appName, String version, String buildIdentifier)
+    void rollBack(String tenant, String appName, String version, String buildIdentifier)
+            throws WebArtifactHandlerException;
+
+    /**
+     * make a roll update to the newly deployed web artifact build
+     * @param tenant            name of the tenant
+     * @param appName           name of the app
+     * @param version           deployed version of the artifact
+     * @param artifactPath      newly deployed web artifact
+     */
+    void rollUpdate(String tenant, String appName, String version, Path artifactPath)
             throws WebArtifactHandlerException;
 
     /**
