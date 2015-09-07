@@ -5,7 +5,7 @@ Uses the https://github.com/spotify/docker-client repo for Docker image handling
 
 This Java IntelliJ IDEA project has been packaged as a jar. 
 
-First, clone the Java-Kubernetes-Web-Artifact-Handler repo and build it using Apache Maven. (Java target version is 1.7)
+First, clone the Java-Kubernetes-Web-Artifact-Handler repo and build it using Apache Maven. (Java target version is jdk 1.7)
 
 Maven-shade-plugin has been used to bundle up the required dependencies hence, when executing the java-web-artifact-handler-1.0-SNAPSHOT.jar, the uber-java-web-artifact-handler-1.0-SNAPSHOT.jar has to be in the classpath.(both jar files in the same folder)
 
