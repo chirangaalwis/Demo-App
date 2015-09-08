@@ -109,7 +109,6 @@ public class JavaWebArtifactImageHandler implements IDockerImageHandler {
             LOG.error(message, exception);
             throw new WebArtifactHandlerException(message, exception);
         }
-
         return matchingImageList;
     }
 

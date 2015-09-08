@@ -28,6 +28,8 @@ import org.wso2.carbon6.poc.exceptions.WebArtifactHandlerException;
 import org.wso2.carbon6.poc.kubernetes.tomcat.support.FileInputThread;
 import org.wso2.carbon6.poc.kubernetes.tomcat.support.KubernetesConstantsExtended;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -125,24 +127,31 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
     public String getNodePortIP(String serviceId, String appName) throws WebArtifactHandlerException {
         int nodePort;
         try {
-            Service service = getService(serviceId);
-            final int portIndex = 0;
-            if(service != null) {
-                nodePort = service.getSpec().getPorts().get(portIndex).getNodePort();
+            try {
+                Service service = getService(serviceId);
+                final int portIndex = 0;
+                if(service != null) {
+                    nodePort = service.getSpec().getPorts().get(portIndex).getNodePort();
+                }
+                else {
+                    nodePort = -1;
+                }
+            } catch (WebArtifactHandlerException exception) {
+                String message = String.format("Could not find the service[service-identifier] cluster ip: %s", serviceId);
+                LOG.error(message, exception);
+                throw new WebArtifactHandlerException(message, exception);
+            }
+            if(nodePort != -1) {
+                return String.format("http://%s:%d/%s", InetAddress
+                        .getLocalHost().getHostName(), nodePort, appName);
             }
             else {
-                nodePort = -1;
+                return "NodePortIP not available";
             }
-        } catch (WebArtifactHandlerException exception) {
-            String message = String.format("Could not find the service[service-identifier] cluster ip: %s", serviceId);
+        } catch (UnknownHostException exception) {
+            String message = "Could not find the localhost IP.";
             LOG.error(message, exception);
             throw new WebArtifactHandlerException(message, exception);
-        }
-        if(nodePort != -1) {
-            return String.format("http://%s:%d/%s", KubernetesConstantsExtended.LOCALHOST_NODE_IP, nodePort, appName);
-        }
-        else {
-            return "NodePortIP not available";
         }
     }
 

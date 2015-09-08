@@ -32,9 +32,10 @@ public interface IWebArtifactHandler {
      * @param artifactPath uri to the web app resource
      * @param version      deployed version of the artifact
      * @param replicas     number of deployed replicas of the web app
+     * @return true if successfully deployed, else false
      * @throws WebArtifactHandlerException
      */
-    void deploy(String tenant, String appName, Path artifactPath, String version, int replicas)
+    boolean deploy(String tenant, String appName, Path artifactPath, String version, int replicas)
             throws WebArtifactHandlerException;
 
     /**
@@ -51,12 +52,15 @@ public interface IWebArtifactHandler {
 
     /**
      * make a roll update to the newly deployed web artifact build
-     * @param tenant            name of the tenant
-     * @param appName           name of the app
-     * @param version           deployed version of the artifact
-     * @param artifactPath      newly deployed web artifact
+     *
+     * @param tenant       name of the tenant
+     * @param appName      name of the app
+     * @param version      deployed version of the artifact
+     * @param artifactPath newly deployed web artifact
+     * @return true if successfully updated, else false
+     * @throws WebArtifactHandlerException
      */
-    void rollUpdate(String tenant, String appName, String version, Path artifactPath)
+    boolean rollUpdate(String tenant, String appName, String version, Path artifactPath)
             throws WebArtifactHandlerException;
 
     /**
@@ -136,9 +140,8 @@ public interface IWebArtifactHandler {
      *
      * @param tenant  name of the tenant
      * @param appName name of the app
-     * @param version deployed version of the artifact
      * @throws WebArtifactHandlerException
      */
-    void remove(String tenant, String appName, String version) throws WebArtifactHandlerException;
+    void remove(String tenant, String appName) throws WebArtifactHandlerException;
 
 }

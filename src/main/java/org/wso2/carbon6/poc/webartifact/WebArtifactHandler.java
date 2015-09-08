@@ -50,17 +50,22 @@ public class WebArtifactHandler implements IWebArtifactHandler {
         imageBuilder = new JavaWebArtifactImageHandler();
     }
 
-    public void deploy(String tenant, String appName, Path artifactPath, String version, int replicas)
+    public boolean deploy(String tenant, String appName, Path artifactPath, String version, int replicas)
             throws WebArtifactHandlerException {
         String componentName = generateKubernetesComponentName(tenant, appName);
         String dockerImageName;
-
         try {
-            dockerImageName = imageBuilder.buildImage(tenant, appName, version, artifactPath);
-            Thread.sleep(OPERATION_DELAY_IN_MILLISECONDS);
-            replicationControllerHandler
-                    .createReplicationController(componentName, componentName, dockerImageName, replicas);
-            serviceHandler.createService(componentName, componentName);
+            if(imageBuilder.getExistingImages(tenant, appName, version).size() == 0) {
+                dockerImageName = imageBuilder.buildImage(tenant, appName, version, artifactPath);
+                Thread.sleep(OPERATION_DELAY_IN_MILLISECONDS);
+                replicationControllerHandler
+                        .createReplicationController(componentName, componentName, dockerImageName, replicas);
+                serviceHandler.createService(componentName, componentName);
+                return true;
+            }
+            else {
+                return false;
+            }
         } catch (Exception exception) {
             String message = String.format("Failed to deploy web artifact[web-artifact]: %s", artifactPath.toString());
             LOG.error(message, exception);
@@ -75,12 +80,18 @@ public class WebArtifactHandler implements IWebArtifactHandler {
         podHandler.deleteReplicaPods(tenant, appName);
     }
 
-    public void rollUpdate(String tenant, String appName, String version, Path artifactPath)
+    public boolean rollUpdate(String tenant, String appName, String version, Path artifactPath)
             throws WebArtifactHandlerException {
         String componentName = generateKubernetesComponentName(tenant, appName);
-        String dockerImageName = imageBuilder.buildImage(tenant, appName, version, artifactPath);
-        replicationControllerHandler.updateImage(componentName, dockerImageName);
-        podHandler.deleteReplicaPods(tenant, appName);
+        if((imageBuilder.getExistingImages(tenant, appName, version).size() > 0)) {
+            String dockerImageName = imageBuilder.buildImage(tenant, appName, version, artifactPath);
+            replicationControllerHandler.updateImage(componentName, dockerImageName);
+            podHandler.deleteReplicaPods(tenant, appName);
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     public void scale(String tenant, String appName, int noOfReplicas) throws WebArtifactHandlerException {
@@ -145,22 +156,22 @@ public class WebArtifactHandler implements IWebArtifactHandler {
         String componentName = generateKubernetesComponentName(tenant, appName);
         String ipMessage;
 
-        ipMessage = String.format("Cluster IP: %s\nNodePort: %s\n\n", serviceHandler
+        ipMessage = String.format("Cluster IP: %s\nPublic IP: %s\n\n", serviceHandler
                         .getClusterIP(generateKubernetesComponentName(tenant, appName), getArtifactName(artifactPath)),
                 serviceHandler.getNodePortIP(componentName, getArtifactName(artifactPath)));
 
         return ipMessage;
     }
 
-    public void remove(String tenant, String appName, String version) throws WebArtifactHandlerException {
+    public void remove(String tenant, String appName) throws WebArtifactHandlerException {
         String componentName = generateKubernetesComponentName(tenant, appName);
         try {
             replicationControllerHandler.deleteReplicationController(componentName);
             podHandler.deleteReplicaPods(tenant, appName);
             serviceHandler.deleteService(componentName);
         } catch (Exception exception) {
-            String message = String
-                    .format("Failed to remove web artifact[artifact]: %s", tenant + "/" + appName + ":" + version);
+            String message = String.format("Failed to remove web artifact[artifact]: %s",
+                    generateKubernetesComponentName(tenant, appName));
             LOG.error(message, exception);
             throw new WebArtifactHandlerException(message, exception);
         }

@@ -21,6 +21,7 @@ import org.wso2.carbon6.poc.webartifact.WebArtifactHandler;
 import org.wso2.carbon6.poc.webartifact.interfaces.IWebArtifactHandler;
 
 import java.lang.Object;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -44,7 +45,6 @@ public class Executor {
                     userChoice = SCANNER.nextInt();
                     SCANNER.nextLine();
                 } while ((userChoice < 1) || (userChoice > 6));
-
                 process(userChoice, webArtifactHandler);
             }
         } catch (Exception e) {
@@ -54,58 +54,6 @@ public class Executor {
 
     private static void showMenu(String menuContent) {
         System.out.print(menuContent);
-    }
-
-    private static Map<String, Object> gatherDeploymentData() {
-        Map<String, Object> inputs;
-        inputs = gatherIdentifierData();
-
-        showMenu("Artifact path: ");
-        String path = SCANNER.nextLine();
-        Path artifactPath = Paths.get(path);
-
-        int replicas;
-        do {
-            showMenu("Number of deployment replicas: ");
-            replicas = SCANNER.nextInt();
-            SCANNER.nextLine();
-        } while ((replicas < 1));
-
-        // Add to list of inputs
-        inputs.put("artifact", artifactPath);
-        inputs.put("replicas", replicas);
-
-        return inputs;
-    }
-
-    private static Map<String, Object> gatherIdentifierData() {
-        Map<String, Object> inputs;
-        inputs = gatherRepositoryData();
-
-        showMenu("App version: ");
-        String version = SCANNER.nextLine();
-
-        // Add to list of inputs
-        inputs.put("version", version);
-
-        return inputs;
-    }
-
-    private static Map<String, Object> gatherScalingData(IWebArtifactHandler webArtifactHandler)
-            throws WebArtifactHandlerException {
-        Map<String, Object> inputs;
-        inputs = gatherRepositoryData();
-
-        showMenu("Current no. of web artifact replicas running: " + webArtifactHandler
-                .getNoOfReplicas((String) inputs.get("tenant"), (String) inputs.get("app")) + "\n");
-        showMenu("Enter new no. of replicas: ");
-        int replicas = SCANNER.nextInt();
-        SCANNER.nextLine();
-
-        // Add to list of inputs
-        inputs.put("replicas", replicas);
-
-        return inputs;
     }
 
     private static Map<String, Object> gatherRepositoryData() {
@@ -126,16 +74,74 @@ public class Executor {
         return inputs;
     }
 
-    private static Map<String, Object> gatherUpdateData() {
-        Map<String, Object> inputs = gatherIdentifierData();
-
-        showMenu("Artifact path: ");
-        String path = SCANNER.nextLine();
-        Path artifactPath = Paths.get(path);
+    private static Map<String, Object> gatherIdentifierData() {
+        Map<String, Object> inputs;
+        inputs = gatherRepositoryData();
+        showMenu("App version: ");
+        String version = SCANNER.nextLine();
 
         // Add to list of inputs
-        inputs.put("artifact", artifactPath);
+        inputs.put("version", version);
+        return inputs;
+    }
 
+    private static Map<String, Object> gatherDeploymentData() {
+        Map<String, Object> inputs;
+        inputs = gatherIdentifierData();
+        Path artifactPath;
+        boolean exists;
+        do {
+            showMenu("Artifact path: ");
+            String path = SCANNER.nextLine();
+            artifactPath = Paths.get(path);
+            exists = Files.exists(artifactPath);
+            if(!exists) {
+                showMenu("This file path does not exist.\n");
+            }
+        }
+        while(!exists);
+        int replicas;
+        do {
+            showMenu("Number of deployment replicas: ");
+            replicas = SCANNER.nextInt();
+            SCANNER.nextLine();
+        } while ((replicas < 1));
+        // Add to list of inputs
+        inputs.put("artifact", artifactPath);
+        inputs.put("replicas", replicas);
+        return inputs;
+    }
+
+    private static Map<String, Object> gatherUpdateData() {
+        Map<String, Object> inputs = gatherIdentifierData();
+        Path artifactPath;
+        boolean exists;
+        do {
+            showMenu("Artifact path: ");
+            String path = SCANNER.nextLine();
+            artifactPath = Paths.get(path);
+            exists = Files.exists(artifactPath);
+            if(!exists) {
+                showMenu("This file path does not exist.\n");
+            }
+        }
+        while(!exists);
+        // Add to list of inputs
+        inputs.put("artifact", artifactPath);
+        return inputs;
+    }
+
+    private static Map<String, Object> gatherScalingData(IWebArtifactHandler webArtifactHandler)
+            throws WebArtifactHandlerException {
+        Map<String, Object> inputs;
+        inputs = gatherRepositoryData();
+        showMenu("Current no. of web artifact replicas running: " + webArtifactHandler
+                .getNoOfReplicas((String) inputs.get("tenant"), (String) inputs.get("app")) + "\n");
+        showMenu("Enter new no. of replicas: ");
+        int replicas = SCANNER.nextInt();
+        SCANNER.nextLine();
+        // Add to list of inputs
+        inputs.put("replicas", replicas);
         return inputs;
     }
 
@@ -144,6 +150,9 @@ public class Executor {
         String tenant;
         String appName;
         String version;
+        String now;
+        DateTime dateTime;
+        Path artifactPath;
 
         switch (choice) {
         case 1:
@@ -152,14 +161,19 @@ public class Executor {
             appName = (String) inputs.get("app");
             // set the image version
             version = (String) inputs.get("version");
-            DateTime dateTime = new DateTime();
-            String now = dateTime.getYear() + "-" + dateTime.getMonthOfYear() + "-" + dateTime.getDayOfMonth() + "-"
+            dateTime = new DateTime();
+            now = dateTime.getYear() + "-" + dateTime.getMonthOfYear() + "-" + dateTime.getDayOfMonth() + "-"
                     + dateTime.getMillisOfDay();
             version += ("-" + now);
-            Path artifactPath = (Path) inputs.get("artifact");
+            artifactPath = (Path) inputs.get("artifact");
             int replicas = (Integer) (inputs.get("replicas"));
-            webArtifactHandler.deploy(tenant, appName, artifactPath, version, replicas);
-            showMenu(webArtifactHandler.getServiceAccessIPs(tenant, appName, artifactPath));
+            boolean deployed = webArtifactHandler.deploy(tenant, appName, artifactPath, version, replicas);
+            if (deployed) {
+                showMenu(webArtifactHandler.getServiceAccessIPs(tenant, appName, artifactPath));
+            } else {
+                showMenu("This web artifact has already been deployed. Please use a "
+                        + "rolling update to make an updated deployment.\n");
+            }
             break;
         case 2:
             inputs = gatherUpdateData();
@@ -172,33 +186,39 @@ public class Executor {
                     .getMillisOfDay();
             version += ("-" + now);
             artifactPath = (Path) inputs.get("artifact");
-            webArtifactHandler.rollUpdate(tenant, appName, version, artifactPath);
-            showMenu(webArtifactHandler.getServiceAccessIPs(tenant, appName, artifactPath));
+            deployed = webArtifactHandler.rollUpdate(tenant, appName, version, artifactPath);
+            if (deployed) {
+                showMenu(webArtifactHandler.getServiceAccessIPs(tenant, appName, artifactPath));
+            } else {
+                showMenu("This web artifact version has not been deployed, before. "
+                        + "Please deploy the artifact version, before making an updated deployment.\n");
+            }
             break;
         case 3:
             inputs = gatherIdentifierData();
             tenant = (String) inputs.get("tenant");
             appName = (String) inputs.get("app");
             version = (String) inputs.get("version");
-            List<String> displayLowerList = webArtifactHandler.listLowerBuildArtifactVersions(tenant, appName, version);
-            if (displayLowerList.size() > 0) {
+            List<String> displayLowerList = webArtifactHandler.
+                    listLowerBuildArtifactVersions(tenant, appName, version);
+            if ((displayLowerList != null) && (displayLowerList.size() > 0)) {
                 displayList(displayLowerList);
-                String userChoice;
+                int userChoice;
                 do {
-                    showMenu("Enter the version from the above: ");
-                    userChoice = SCANNER.nextLine();
-                } while (!displayLowerList.contains(userChoice));
-                webArtifactHandler.rollBack(tenant, appName, version, userChoice);
+                    showMenu("Enter your choice: ");
+                    userChoice = SCANNER.nextInt();
+                    SCANNER.nextLine();
+                } while ((userChoice < 0) && (userChoice > displayLowerList.size()));
+                webArtifactHandler.rollBack(tenant, appName, version, getListChoice(displayLowerList, userChoice));
             } else {
                 showMenu("No lower web app build versions.\n");
             }
             break;
         case 4:
-            inputs = gatherIdentifierData();
+            inputs = gatherRepositoryData();
             tenant = (String) inputs.get("tenant");
             appName = (String) inputs.get("app");
-            version = (String) inputs.get("version");
-            webArtifactHandler.remove(tenant, appName, version);
+            webArtifactHandler.remove(tenant, appName);
             break;
         case 5:
             inputs = gatherScalingData(webArtifactHandler);
@@ -211,7 +231,6 @@ public class Executor {
             System.exit(0);
             break;
         }
-
     }
 
     private static void displayList(List<String> data) {
@@ -219,6 +238,14 @@ public class Executor {
             for (int count = 0; count < data.size(); count++) {
                 System.out.print((count + 1) + ". " + data.get(count) + "\n");
             }
+        }
+    }
+
+    private static String getListChoice(List<String> choices, int choice) {
+        if ((choices != null) && (choice > 0 && choice <= choices.size())) {
+            return choices.get(choice - 1);
+        } else {
+            return null;
         }
     }
 
