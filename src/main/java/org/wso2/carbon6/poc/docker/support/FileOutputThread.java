@@ -15,12 +15,17 @@
 */
 package org.wso2.carbon6.poc.docker.support;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.FileNotFoundException;
 import java.util.List;
 
 public class FileOutputThread implements Runnable {
     private String fileName;
     private List<String> dataList;
+
+    private static final Logger LOG = LogManager.getLogger(FileOutputThread.class);
 
     public FileOutputThread(String fileName, List<String> data) {
         this.fileName = fileName;
@@ -33,8 +38,9 @@ public class FileOutputThread implements Runnable {
             output.openFile(fileName);
             output.addDataToFile(dataList);
             output.closeFile();
-        } catch (FileNotFoundException exception) {
-            exception.printStackTrace();
+        } catch (Exception exception) {
+            String message = "Could not output data to the external file.";
+            LOG.error(message, exception);
         }
     }
 }

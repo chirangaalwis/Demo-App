@@ -15,6 +15,9 @@
 */
 package org.wso2.carbon6.poc.kubernetes.tomcat.support;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +25,8 @@ import java.util.List;
 public class FileInputThread implements Runnable {
     private String fileName;
     private List<String> fileContent;
+
+    private static final Logger LOG = LogManager.getLogger(FileInputThread.class);
 
     public FileInputThread(String fileName) {
         this.fileName = fileName;
@@ -42,8 +47,9 @@ public class FileInputThread implements Runnable {
             List<String> data = input.readDataFromFile();
             input.closeFile();
             fileContent = data;
-        } catch (IOException exception) {
-            exception.printStackTrace();
+        } catch (Exception exception) {
+            String message = "Could not input data from the external file.";
+            LOG.error(message, exception);
         }
     }
 

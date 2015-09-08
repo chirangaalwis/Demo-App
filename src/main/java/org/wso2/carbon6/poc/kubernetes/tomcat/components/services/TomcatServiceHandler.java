@@ -45,7 +45,6 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
 
     public void createService(String serviceId, String serviceName) throws WebArtifactHandlerException {
         FileOutputThread fileOutput;
-
         try {
             Service service = getService(serviceId);
             if (service == null) {
@@ -55,19 +54,16 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
                                     serviceName);
                     LOG.debug(message);
                 }
-
                 client.createService(serviceId, serviceName, nodePortValue, KubernetesConstants.NODE_PORT,
                         KubernetesConstantsExtended.SERVICE_PORT_NAME,
                         KubernetesConstantsExtended.TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT,
                         KubernetesConstantsExtended.SESSION_AFFINITY_CONFIG);
-
                 if (LOG.isDebugEnabled()) {
                     String message = String
                             .format("Created Kubernetes service" + " [service-ID] %s [service-name] %s ", serviceId,
                                     serviceName);
                     LOG.debug(message);
                 }
-
                 // changing the NodePort service type port value to the next available port value
                 if (nodePortValue < (KubernetesConstantsExtended.NODE_PORT_UPPER_LIMIT)) {
                     nodePortValue++;
@@ -81,10 +77,10 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
                 fileOutput = new FileOutputThread(KubernetesConstantsExtended.NODE_PORT_ALLOCATION_FILENAME, output);
                 fileOutput.run();
             }
-        } catch (KubernetesClientException e) {
+        } catch (KubernetesClientException exception) {
             String message = String.format("Could not create the service[service-identifier]: " + "%s", serviceId);
-            LOG.error(message, e);
-            throw new WebArtifactHandlerException(message, e);
+            LOG.error(message, exception);
+            throw new WebArtifactHandlerException(message, exception);
         }
     }
 
@@ -92,44 +88,62 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
         Service service = null;
         try {
             List<Service> services = client.getServices();
-            for (Service tempService : services) {
-                if (tempService.getMetadata().getName().equals(serviceId)) {
-                    service = tempService;
-                    break;
+            if((serviceId != null) && (services != null)) {
+                for (Service tempService : services) {
+                    if (tempService.getMetadata().getName().equals(serviceId)) {
+                        service = tempService;
+                        break;
+                    }
                 }
             }
-        } catch (KubernetesClientException e) {
+        } catch (KubernetesClientException exception) {
             String message = String.format("Could not create the service[service-identifier]: " + "%s", serviceId);
-            LOG.error(message, e);
-            throw new WebArtifactHandlerException(message, e);
+            LOG.error(message, exception);
+            throw new WebArtifactHandlerException(message, exception);
         }
-
         return service;
     }
 
     public String getClusterIP(String serviceId, String appName) throws WebArtifactHandlerException {
         try {
-            return String.format("http://%s:%d/%s", client.getService(serviceId).getSpec().getClusterIP(),
-                    KubernetesConstantsExtended.TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT, appName);
-        } catch (KubernetesClientException e) {
+            Service service = getService(serviceId);
+            if(service != null) {
+                return String.format("http://%s:%d/%s", service.getSpec().getClusterIP(),
+                        KubernetesConstantsExtended.TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT, appName);
+            }
+            else {
+                return "ClusterIP not available.";
+            }
+        } catch (WebArtifactHandlerException exception) {
             String message = String
                     .format("Could not find the service[service-identifier] " + "cluster ip: %s", serviceId);
-            LOG.error(message, e);
-            throw new WebArtifactHandlerException(message, e);
+            LOG.error(message, exception);
+            throw new WebArtifactHandlerException(message, exception);
         }
     }
 
     public String getNodePortIP(String serviceId, String appName) throws WebArtifactHandlerException {
         int nodePort;
         try {
+            Service service = getService(serviceId);
             final int portIndex = 0;
-            nodePort = client.getService(serviceId).getSpec().getPorts().get(portIndex).getNodePort();
-        } catch (KubernetesClientException e) {
+            if(service != null) {
+                nodePort = service.getSpec().getPorts().get(portIndex).getNodePort();
+            }
+            else {
+                nodePort = -1;
+            }
+        } catch (WebArtifactHandlerException exception) {
             String message = String.format("Could not find the service[service-identifier] cluster ip: %s", serviceId);
-            LOG.error(message, e);
-            throw new WebArtifactHandlerException(message, e);
+            LOG.error(message, exception);
+            throw new WebArtifactHandlerException(message, exception);
         }
-        return String.format("http://%s:%d/%s", KubernetesConstantsExtended.LOCALHOST_NODE_IP, nodePort, appName);
+        if(nodePort != -1) {
+            return String.format("http://%s:%d/%s", KubernetesConstantsExtended.LOCALHOST_NODE_IP, nodePort, appName);
+        }
+        else {
+            return "NodePortIP not available";
+        }
     }
 
     public void deleteService(String serviceId) throws WebArtifactHandlerException {
@@ -146,10 +160,10 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
                     LOG.debug(message);
                 }
             }
-        } catch (KubernetesClientException e) {
+        } catch (KubernetesClientException exception) {
             String message = String.format("Could not delete the service[service-identifier]: " + "%s", serviceId);
-            LOG.error(message, e);
-            throw new WebArtifactHandlerException(message, e);
+            LOG.error(message, exception);
+            throw new WebArtifactHandlerException(message, exception);
         }
     }
 

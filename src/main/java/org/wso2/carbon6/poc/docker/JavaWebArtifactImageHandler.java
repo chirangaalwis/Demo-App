@@ -41,7 +41,6 @@ public class JavaWebArtifactImageHandler implements IDockerImageHandler {
 
     public JavaWebArtifactImageHandler() throws WebArtifactHandlerException {
         try {
-
             // creates a new com.spotify.docker.client.DockerClient
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Creating new DockerClient.");
@@ -50,7 +49,6 @@ public class JavaWebArtifactImageHandler implements IDockerImageHandler {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Creating new DockerClient[docker-client]: %s.", dockerClient));
             }
-
         } catch (DockerCertificateException exception) {
             String message = "Could not create a new JavaWebArtifactImageHandler instance.";
             LOG.error(message, exception);
@@ -62,24 +60,23 @@ public class JavaWebArtifactImageHandler implements IDockerImageHandler {
             throws WebArtifactHandlerException {
         String dockerImageName = generateImageIdentifier(creator, imageName, imageVersion);
         try {
-            /*
-            sets up the environment by creating a new Dockerfile for the specified
-            web-artifact deployment
-             */
-            setupEnvironment(artifactPath);
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format(
-                        "Creating a new Apache Tomcat based " + "Docker image for the [web-artifact] %s web artifact.",
-                        artifactPath.getFileName().toString()));
+            if (dockerImageName != null) {
+                /*
+                sets up the environment by creating a new Dockerfile for the specified
+                web-artifact deployment
+                 */
+                setupEnvironment(artifactPath);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("Creating a new Apache Tomcat based "
+                                    + "Docker image for the [web-artifact] %s web artifact.",
+                            artifactPath.getFileName().toString()));
+                }
+                dockerClient.build(artifactPath.getParent(), dockerImageName);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("Created a new Apache Tomcat based "
+                            + "Docker image for the [web-artifact] %s web artifact.", artifactPath.getFileName()));
+                }
             }
-            dockerClient.build(artifactPath.getParent(), dockerImageName);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format(
-                        "Created a new Apache Tomcat based " + "Docker image for the [web-artifact] %s web artifact.",
-                        artifactPath.getFileName()));
-            }
-
         } catch (Exception exception) {
             String message = String
                     .format("Could not create the Docker image[docker-image]: " + "%s.", dockerImageName);
@@ -93,14 +90,16 @@ public class JavaWebArtifactImageHandler implements IDockerImageHandler {
     public List<Image> getExistingImages(String creator, String imageName, String version)
             throws WebArtifactHandlerException {
         List<Image> matchingImageList = new ArrayList<>();
-        String imageIdentifier = creator + "/" + imageName + ":" + version;
+        String imageIdentifier = generateImageIdentifier(creator, imageName, version);
         try {
-            List<Image> tempImages = dockerClient.listImages();
-            for (Image image : tempImages) {
-                for (String tag : image.repoTags()) {
-                    if (tag.contains(imageIdentifier)) {
-                        if (!matchingImageList.contains(image)) {
-                            matchingImageList.add(image);
+            if (imageIdentifier != null) {
+                List<Image> tempImages = dockerClient.listImages();
+                for (Image image : tempImages) {
+                    for (String tag : image.repoTags()) {
+                        if (tag.contains(imageIdentifier)) {
+                            if (!matchingImageList.contains(image)) {
+                                matchingImageList.add(image);
+                            }
                         }
                     }
                 }
@@ -118,15 +117,15 @@ public class JavaWebArtifactImageHandler implements IDockerImageHandler {
             throws WebArtifactHandlerException {
         String dockerImageName = generateImageIdentifier(creator, imageName, imageVersion);
         try {
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Removing the Docker image [docker-image]: %s.", dockerImageName));
+            if (dockerImageName != null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("Removing the Docker image [docker-image]: %s.", dockerImageName));
+                }
+                dockerClient.removeImage(dockerImageName);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("Removed the Docker image [docker-image]: %s.", dockerImageName));
+                }
             }
-            dockerClient.removeImage(dockerImageName);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Removed the Docker image [docker-image]: %s.", dockerImageName));
-            }
-
         } catch (Exception exception) {
             String message = String
                     .format("Could not remove the docker image[docker-image]: " + "%s.", dockerImageName);
@@ -144,7 +143,7 @@ public class JavaWebArtifactImageHandler implements IDockerImageHandler {
      * @param filePath path to the web-artifact
      * @throws IOException
      */
-    private void setupEnvironment(Path filePath) throws IOException {
+    private void setupEnvironment(Path filePath) throws IOException, SecurityException {
         Path parentDirectory = filePath.getParent();
         File dockerFile;
 
@@ -210,14 +209,19 @@ public class JavaWebArtifactImageHandler implements IDockerImageHandler {
      * @param creator      creator of the Docker image
      * @param imageName    name of the Docker image name
      * @param imageVersion deployed version of the image
-     * @return Docker image identifier based on the data provided
+     * @return Docker image identifier based on the data provided, if either one or both the
+     * creator or imageName is/are null, null is returned
      */
     private String generateImageIdentifier(String creator, String imageName, String imageVersion) {
         String imageIdentifier;
-        if ((imageVersion == null) || (imageVersion.equals(""))) {
-            imageIdentifier = creator + "/" + imageName + ":latest";
+        if ((creator != null) && (imageName != null)) {
+            if ((imageVersion == null) || (imageVersion.equals(""))) {
+                imageIdentifier = creator + "/" + imageName + ":latest";
+            } else {
+                imageIdentifier = creator + "/" + imageName + ":" + imageVersion;
+            }
         } else {
-            imageIdentifier = creator + "/" + imageName + ":" + imageVersion;
+            imageIdentifier = null;
         }
         return imageIdentifier;
     }

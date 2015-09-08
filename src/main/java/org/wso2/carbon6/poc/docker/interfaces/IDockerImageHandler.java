@@ -33,7 +33,8 @@ public interface IDockerImageHandler {
      * @param imageName    the Docker image identifier
      * @param imageVersion the Docker image version
      * @param artifactPath the artifact to be deployed
-     * @return unique identifier of the created Docker image
+     * @return unique identifier of the created Docker image.
+     * if either one or both the creator and imageName equals null, null is returned
      * @throws WebArtifactHandlerException
      */
     String buildImage(String creator, String imageName, String imageVersion, Path artifactPath)

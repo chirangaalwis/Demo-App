@@ -65,7 +65,6 @@
             <artifactId>log4j-core</artifactId>
             <version>2.3</version>
         </dependency>
-
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
@@ -78,75 +77,36 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.6</version>
+                <version>2.4</version>
                 <configuration>
                     <archive>
                         <manifest>
-                            <addClasspath>true</addClasspath>
                             <mainClass>org.wso2.carbon6.poc.Executor</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.1</version>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/bin.xml</descriptor>
+                    </descriptors>
+                    <archiverConfig>
+                        <fileMode>420</fileMode>
+                        <directoryMode>493</directoryMode>
+                        <defaultDirectoryMode>493</defaultDirectoryMode>
+                    </archiverConfig>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
                 <executions>
                     <execution>
                         <phase>package</phase>
                         <goals>
-                            <goal>shade</goal>
+                            <goal>attached</goal>
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <finalName>uber-${project.artifactId}-${project.version}</finalName>
-                    <filters>
-                        <filter>
-                            <artifact>*:*</artifact>
-                            <excludes>
-                                <exclude>META-INF/*.SF</exclude>
-                                <exclude>META-INF/*.DSA</exclude>
-                                <exclude>META-INF/*.RSA</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
-                    <transformers>
-                        <transformer
-                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>org.apache.tika.cli.TikaCLI</mainClass>
-                        </transformer>
-
-                        <transformer
-                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                        <transformer
-                                implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                            <resource>META-INF/LICENSE</resource>
-                            <file>target/classes/META-INF/LICENSE</file>
-                        </transformer>
-
-                        <transformer
-                                implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                            <resource>META-INF/NOTICE</resource>
-                            <file>target/classes/META-INF/NOTICE</file>
-
-                        </transformer>
-
-
-                        <transformer
-                                implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                            <resource>META-INF/DEPENDENCIES</resource>
-                            <file>target/classes/META-INF/DEPENDENCIES</file>
-
-                        </transformer>
-
-                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                            <resource>META-INF/cxf/bus-extensions.txt</resource>
-
-                        </transformer>
-                    </transformers>
-                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>

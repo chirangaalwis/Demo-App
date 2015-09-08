@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 class FileInput {
@@ -38,7 +39,8 @@ class FileInput {
      * @throws IOException       I/O error when opening the file
      * @throws SecurityException If a security manager denies read access to the file or directory
      */
-    public void openFile(String fileName) throws IOException, SecurityException {
+    public void openFile(String fileName)
+            throws IOException, SecurityException, IllegalStateException, NoSuchElementException {
         File outputFile = new File(fileName);
 
         boolean exists = outputFile.exists();
@@ -56,7 +58,7 @@ class FileInput {
      *
      * @return list of String data items read from the file
      */
-    public List<String> readDataFromFile() {
+    public List<String> readDataFromFile() throws IllegalStateException, NoSuchElementException {
         List<String> data = new ArrayList<>();
         if (input != null) {
             while (input.hasNextLine()) {

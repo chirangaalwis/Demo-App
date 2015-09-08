@@ -44,62 +44,67 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
     public void createReplicationController(String controllerName, String podLabel, String tomcatDockerImageName,
             int numberOfReplicas) throws WebArtifactHandlerException {
         try {
+            if ((controllerName != null) && (podLabel != null) && (tomcatDockerImageName != null)) {
+                ReplicationController controller = getReplicationController(controllerName);
 
-            ReplicationController controller = getReplicationController(controllerName);
+                if (controller == null) {
+                    if (LOG.isDebugEnabled()) {
+                        String message = String.format("Creating Kubernetes replication controller"
+                                        + " [controller-name] %s [pod-label] %s " + "[pod-Docker-image-name] %s",
+                                controllerName, podLabel, tomcatDockerImageName);
+                        LOG.debug(message);
+                    }
 
-            if (controller == null) {
-                if (LOG.isDebugEnabled()) {
-                    String message = String.format("Creating Kubernetes replication controller"
-                                    + " [controller-name] %s [pod-label] %s " + "[pod-Docker-image-name] %s",
-                            controllerName, podLabel, tomcatDockerImageName);
-                    LOG.debug(message);
+                    ReplicationController replicationController = new ReplicationController();
+
+                    replicationController.setApiVersion(ReplicationController.ApiVersion.V_1);
+                    replicationController.setKind(KubernetesConstantsExtended.REPLICATION_CONTROLLER_COMPONENT_KIND);
+
+                    ObjectMeta metadata = new ObjectMeta();
+                    metadata.setName(controllerName);
+                    replicationController.setMetadata(metadata);
+
+                    ReplicationControllerSpec replicationControllerSpec = new ReplicationControllerSpec();
+                    replicationControllerSpec.setReplicas(numberOfReplicas);
+
+                    PodTemplateSpec podTemplateSpec = new PodTemplateSpec();
+                    PodSpec podSpec = new PodSpec();
+
+                    List<Container> podContainers = new ArrayList<>();
+                    Container container = new Container();
+                    container.setImage(tomcatDockerImageName);
+                    container.setName(podLabel);
+                    podContainers.add(container);
+                    podSpec.setContainers(podContainers);
+
+                    podTemplateSpec.setSpec(podSpec);
+
+                    Map<String, String> selectors = new HashMap<>();
+                    selectors.put(KubernetesConstantsExtended.LABEL_NAME, podLabel);
+
+                    ObjectMeta tempMeta = new ObjectMeta();
+                    tempMeta.setLabels(selectors);
+                    podTemplateSpec.setMetadata(tempMeta);
+
+                    replicationControllerSpec.setTemplate(podTemplateSpec);
+                    replicationControllerSpec.setSelector(selectors);
+                    replicationController.setSpec(replicationControllerSpec);
+
+                    client.createReplicationController(replicationController, "default");
+
+                    if (LOG.isDebugEnabled()) {
+                        String message = String.format("Created Kubernetes replication controller"
+                                        + " [controller-name] %s [pod-label] %s " + "[pod-Docker-image-name] %s",
+                                controllerName, podLabel, tomcatDockerImageName);
+                        LOG.debug(message);
+                    }
                 }
-
-                ReplicationController replicationController = new ReplicationController();
-
-                replicationController.setApiVersion(ReplicationController.ApiVersion.V_1);
-                replicationController.setKind(KubernetesConstantsExtended.REPLICATION_CONTROLLER_COMPONENT_KIND);
-
-                ObjectMeta metadata = new ObjectMeta();
-                metadata.setName(controllerName);
-                replicationController.setMetadata(metadata);
-
-                ReplicationControllerSpec replicationControllerSpec = new ReplicationControllerSpec();
-                replicationControllerSpec.setReplicas(numberOfReplicas);
-
-                PodTemplateSpec podTemplateSpec = new PodTemplateSpec();
-                PodSpec podSpec = new PodSpec();
-
-                List<Container> podContainers = new ArrayList<>();
-                Container container = new Container();
-                container.setImage(tomcatDockerImageName);
-                container.setName(podLabel);
-                podContainers.add(container);
-                podSpec.setContainers(podContainers);
-
-                podTemplateSpec.setSpec(podSpec);
-
-                Map<String, String> selectors = new HashMap<>();
-                selectors.put(KubernetesConstantsExtended.LABEL_NAME, podLabel);
-
-                ObjectMeta tempMeta = new ObjectMeta();
-                tempMeta.setLabels(selectors);
-                podTemplateSpec.setMetadata(tempMeta);
-
-                replicationControllerSpec.setTemplate(podTemplateSpec);
-                replicationControllerSpec.setSelector(selectors);
-                replicationController.setSpec(replicationControllerSpec);
-
-                client.createReplicationController(replicationController, "default");
-
-                if (LOG.isDebugEnabled()) {
-                    String message = String.format("Created Kubernetes replication controller"
-                                    + " [controller-name] %s [pod-label] %s " + "[pod-Docker-image-name] %s",
-                            controllerName, podLabel, tomcatDockerImageName);
-                    LOG.debug(message);
-                }
+            } else {
+                String message = String
+                        .format("Could not create the replication controller[rc-identifier]: " + "%s", controllerName);
+                LOG.error(message);
+                throw new WebArtifactHandlerException(message);
             }
-
         } catch (Exception e) {
             String message = String
                     .format("Could not create the replication controller[rc-identifier]: " + "%s", controllerName);
@@ -112,20 +117,20 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
         ReplicationController controller = null;
         String controllerId;
         List<ReplicationController> replicationControllers = client.getReplicationControllers().getItems();
-        for (ReplicationController replicationController : replicationControllers) {
-            controllerId = replicationController.getMetadata().getName();
-            if (controllerName.equals(controllerId)) {
-                controller = replicationController;
-                break;
+        if ((controllerName != null) && (replicationControllers != null)) {
+            for (ReplicationController replicationController : replicationControllers) {
+                controllerId = replicationController.getMetadata().getName();
+                if (controllerName.equals(controllerId)) {
+                    controller = replicationController;
+                    break;
+                }
             }
         }
-
         return controller;
     }
 
     public int getNoOfReplicas(String controllerName) throws WebArtifactHandlerException {
         ReplicationController replicationController = getReplicationController(controllerName);
-
         if (replicationController != null) {
             return replicationController.getSpec().getReplicas();
         } else {
