@@ -15,7 +15,6 @@
 */
 package org.wso2.carbon6.poc;
 
-import org.joda.time.DateTime;
 import org.wso2.carbon6.poc.exceptions.WebArtifactHandlerException;
 import org.wso2.carbon6.poc.webartifact.WebArtifactHandler;
 import org.wso2.carbon6.poc.webartifact.interfaces.IWebArtifactHandler;
@@ -89,17 +88,21 @@ public class Executor {
         Map<String, Object> inputs;
         inputs = gatherIdentifierData();
         Path artifactPath;
-        boolean exists;
+        boolean exists = false;
         do {
             showMenu("Artifact path: ");
             String path = SCANNER.nextLine();
             artifactPath = Paths.get(path);
-            exists = Files.exists(artifactPath);
-            if(!exists) {
+            if (!Files.isDirectory(artifactPath)) {
+                exists = Files.exists(artifactPath);
+            } else {
+                showMenu("The path should not refer to a directory.");
+                continue;
+            }
+            if (!exists) {
                 showMenu("This file path does not exist.\n");
             }
-        }
-        while(!exists);
+        } while (!exists);
         int replicas;
         do {
             showMenu("Number of deployment replicas: ");
@@ -115,17 +118,21 @@ public class Executor {
     private static Map<String, Object> gatherUpdateData() {
         Map<String, Object> inputs = gatherIdentifierData();
         Path artifactPath;
-        boolean exists;
+        boolean exists = false;
         do {
             showMenu("Artifact path: ");
             String path = SCANNER.nextLine();
             artifactPath = Paths.get(path);
-            exists = Files.exists(artifactPath);
-            if(!exists) {
+            if (!Files.isDirectory(artifactPath)) {
+                exists = Files.exists(artifactPath);
+            } else {
+                showMenu("The path should not refer to a directory.\n");
+                continue;
+            }
+            if (!exists) {
                 showMenu("This file path does not exist.\n");
             }
-        }
-        while(!exists);
+        } while (!exists);
         // Add to list of inputs
         inputs.put("artifact", artifactPath);
         return inputs;
@@ -150,10 +157,7 @@ public class Executor {
         String tenant;
         String appName;
         String version;
-        String now;
-        DateTime dateTime;
         Path artifactPath;
-
         switch (choice) {
         case 1:
             inputs = gatherDeploymentData();
@@ -161,10 +165,6 @@ public class Executor {
             appName = (String) inputs.get("app");
             // set the image version
             version = (String) inputs.get("version");
-            dateTime = new DateTime();
-            now = dateTime.getYear() + "-" + dateTime.getMonthOfYear() + "-" + dateTime.getDayOfMonth() + "-"
-                    + dateTime.getMillisOfDay();
-            version += ("-" + now);
             artifactPath = (Path) inputs.get("artifact");
             int replicas = (Integer) (inputs.get("replicas"));
             boolean deployed = webArtifactHandler.deploy(tenant, appName, artifactPath, version, replicas);
@@ -179,12 +179,7 @@ public class Executor {
             inputs = gatherUpdateData();
             tenant = (String) inputs.get("tenant");
             appName = (String) inputs.get("app");
-            // set the image version
             version = (String) inputs.get("version");
-            dateTime = new DateTime();
-            now = dateTime.getYear() + "-" + dateTime.getMonthOfYear() + "-" + dateTime.getDayOfMonth() + "-" + dateTime
-                    .getMillisOfDay();
-            version += ("-" + now);
             artifactPath = (Path) inputs.get("artifact");
             deployed = webArtifactHandler.rollUpdate(tenant, appName, version, artifactPath);
             if (deployed) {
@@ -208,7 +203,7 @@ public class Executor {
                     showMenu("Enter your choice: ");
                     userChoice = SCANNER.nextInt();
                     SCANNER.nextLine();
-                } while ((userChoice < 0) && (userChoice > displayLowerList.size()));
+                } while ((userChoice < 1) || (userChoice > displayLowerList.size()));
                 webArtifactHandler.rollBack(tenant, appName, version, getListChoice(displayLowerList, userChoice));
             } else {
                 showMenu("No lower web app build versions.\n");

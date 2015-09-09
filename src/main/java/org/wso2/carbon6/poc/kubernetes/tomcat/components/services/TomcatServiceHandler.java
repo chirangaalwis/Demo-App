@@ -90,7 +90,7 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
         Service service = null;
         try {
             List<Service> services = client.getServices();
-            if((serviceId != null) && (services != null)) {
+            if ((serviceId != null) && (services != null)) {
                 for (Service tempService : services) {
                     if (tempService.getMetadata().getName().equals(serviceId)) {
                         service = tempService;
@@ -109,11 +109,10 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
     public String getClusterIP(String serviceId, String appName) throws WebArtifactHandlerException {
         try {
             Service service = getService(serviceId);
-            if(service != null) {
+            if (service != null) {
                 return String.format("http://%s:%d/%s", service.getSpec().getClusterIP(),
                         KubernetesConstantsExtended.TOMCAT_DOCKER_CONTAINER_EXPOSED_PORT, appName);
-            }
-            else {
+            } else {
                 return "ClusterIP not available.";
             }
         } catch (WebArtifactHandlerException exception) {
@@ -130,22 +129,20 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
             try {
                 Service service = getService(serviceId);
                 final int portIndex = 0;
-                if(service != null) {
+                if (service != null) {
                     nodePort = service.getSpec().getPorts().get(portIndex).getNodePort();
-                }
-                else {
+                } else {
                     nodePort = -1;
                 }
             } catch (WebArtifactHandlerException exception) {
-                String message = String.format("Could not find the service[service-identifier] cluster ip: %s", serviceId);
+                String message = String
+                        .format("Could not find the service[service-identifier] cluster ip: %s", serviceId);
                 LOG.error(message, exception);
                 throw new WebArtifactHandlerException(message, exception);
             }
-            if(nodePort != -1) {
-                return String.format("http://%s:%d/%s", InetAddress
-                        .getLocalHost().getHostName(), nodePort, appName);
-            }
-            else {
+            if (nodePort != -1) {
+                return String.format("http://%s:%d/%s", InetAddress.getLocalHost().getHostName(), nodePort, appName);
+            } else {
                 return "NodePortIP not available";
             }
         } catch (UnknownHostException exception) {

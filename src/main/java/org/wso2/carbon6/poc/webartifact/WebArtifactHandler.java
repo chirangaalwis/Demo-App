@@ -18,6 +18,7 @@ package org.wso2.carbon6.poc.webartifact;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
 import org.wso2.carbon6.poc.docker.JavaWebArtifactImageHandler;
 import org.wso2.carbon6.poc.docker.interfaces.IDockerImageHandler;
 import org.wso2.carbon6.poc.exceptions.WebArtifactHandlerException;
@@ -55,15 +56,19 @@ public class WebArtifactHandler implements IWebArtifactHandler {
         String componentName = generateKubernetesComponentName(tenant, appName);
         String dockerImageName;
         try {
-            if(imageBuilder.getExistingImages(tenant, appName, version).size() == 0) {
+            if (imageBuilder.getExistingImages(tenant, appName, version).size() == 0) {
+                // append build date and time to major version
+                DateTime dateTime = new DateTime();
+                String now = dateTime.getYear() + "-" + dateTime.getMonthOfYear() + "-" + dateTime.getDayOfMonth() + "-"
+                        + dateTime.getMillisOfDay();
+                version += ("-" + now);
                 dockerImageName = imageBuilder.buildImage(tenant, appName, version, artifactPath);
                 Thread.sleep(OPERATION_DELAY_IN_MILLISECONDS);
                 replicationControllerHandler
                         .createReplicationController(componentName, componentName, dockerImageName, replicas);
                 serviceHandler.createService(componentName, componentName);
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         } catch (Exception exception) {
@@ -83,13 +88,16 @@ public class WebArtifactHandler implements IWebArtifactHandler {
     public boolean rollUpdate(String tenant, String appName, String version, Path artifactPath)
             throws WebArtifactHandlerException {
         String componentName = generateKubernetesComponentName(tenant, appName);
-        if((imageBuilder.getExistingImages(tenant, appName, version).size() > 0)) {
+        if ((imageBuilder.getExistingImages(tenant, appName, version).size() > 0)) {
+            DateTime dateTime = new DateTime();
+            String now = dateTime.getYear() + "-" + dateTime.getMonthOfYear() + "-" + dateTime.getDayOfMonth() + "-"
+                    + dateTime.getMillisOfDay();
+            version += ("-" + now);
             String dockerImageName = imageBuilder.buildImage(tenant, appName, version, artifactPath);
             replicationControllerHandler.updateImage(componentName, dockerImageName);
             podHandler.deleteReplicaPods(tenant, appName);
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
