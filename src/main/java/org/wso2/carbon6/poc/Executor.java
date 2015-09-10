@@ -96,7 +96,7 @@ public class Executor {
             if (!Files.isDirectory(artifactPath)) {
                 exists = Files.exists(artifactPath);
             } else {
-                showMenu("The path should not refer to a directory.");
+                showMenu("The path should not refer to a directory.\n");
                 continue;
             }
             if (!exists) {
@@ -142,13 +142,20 @@ public class Executor {
             throws WebArtifactHandlerException {
         Map<String, Object> inputs;
         inputs = gatherRepositoryData();
-        showMenu("Current no. of web artifact replicas running: " + webArtifactHandler
-                .getNoOfReplicas((String) inputs.get("tenant"), (String) inputs.get("app")) + "\n");
-        showMenu("Enter new no. of replicas: ");
-        int replicas = SCANNER.nextInt();
-        SCANNER.nextLine();
-        // Add to list of inputs
-        inputs.put("replicas", replicas);
+        final int podLess = 0;
+        int noOfReplicas = webArtifactHandler
+                .getNoOfReplicas((String) inputs.get("tenant"), (String) inputs.get("app"));
+        if (noOfReplicas > 0) {
+            showMenu("Current no. of web artifact replicas running: " + noOfReplicas + "\n");
+            showMenu("Enter new no. of replicas: ");
+            int replicas = SCANNER.nextInt();
+            SCANNER.nextLine();
+            // Add to list of inputs
+            inputs.put("replicas", replicas);
+        } else {
+            showMenu("This web artifact has not been deployed yet.\n");
+            inputs.put("replicas", podLess);
+        }
         return inputs;
     }
 
@@ -220,7 +227,9 @@ public class Executor {
             tenant = (String) inputs.get("tenant");
             appName = (String) inputs.get("app");
             int newReplicas = (Integer) inputs.get("replicas");
-            webArtifactHandler.scale(tenant, appName, newReplicas);
+            if (newReplicas > 0) {
+                webArtifactHandler.scale(tenant, appName, newReplicas);
+            }
             break;
         case 6:
             System.exit(0);

@@ -45,9 +45,10 @@ public interface IWebArtifactHandler {
      * @param appName         name of the app
      * @param version         deployed version of the artifact
      * @param buildIdentifier identifier of web artifact build to be newly deployed
+     * @return true if successfully updated, else false
      * @throws WebArtifactHandlerException
      */
-    void rollBack(String tenant, String appName, String version, String buildIdentifier)
+    boolean rollBack(String tenant, String appName, String version, String buildIdentifier)
             throws WebArtifactHandlerException;
 
     /**
@@ -69,9 +70,10 @@ public interface IWebArtifactHandler {
      * @param tenant       name of the tenant
      * @param appName      name of the app
      * @param noOfReplicas latest number of replicas to be deployed
+     * @return true if successfully scaled, else false
      * @throws WebArtifactHandlerException
      */
-    void scale(String tenant, String appName, int noOfReplicas) throws WebArtifactHandlerException;
+    boolean scale(String tenant, String appName, int noOfReplicas) throws WebArtifactHandlerException;
 
     /**
      * returns the number of replicas of a particular web artifact running, currently

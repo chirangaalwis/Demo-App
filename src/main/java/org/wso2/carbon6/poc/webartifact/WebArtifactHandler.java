@@ -78,11 +78,16 @@ public class WebArtifactHandler implements IWebArtifactHandler {
         }
     }
 
-    public void rollBack(String tenant, String appName, String version, String buildIdentifier)
+    public boolean rollBack(String tenant, String appName, String version, String buildIdentifier)
             throws WebArtifactHandlerException {
         String componentName = generateKubernetesComponentName(tenant, appName);
-        replicationControllerHandler.updateImage(componentName, buildIdentifier);
-        podHandler.deleteReplicaPods(tenant, appName);
+        if ((imageBuilder.getExistingImages(tenant, appName, version).size() > 0)) {
+            replicationControllerHandler.updateImage(componentName, buildIdentifier);
+            podHandler.deleteReplicaPods(tenant, appName);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public boolean rollUpdate(String tenant, String appName, String version, Path artifactPath)
@@ -102,9 +107,14 @@ public class WebArtifactHandler implements IWebArtifactHandler {
         }
     }
 
-    public void scale(String tenant, String appName, int noOfReplicas) throws WebArtifactHandlerException {
+    public boolean scale(String tenant, String appName, int noOfReplicas) throws WebArtifactHandlerException {
         String componentName = generateKubernetesComponentName(tenant, appName);
-        replicationControllerHandler.updateNoOfReplicas(componentName, noOfReplicas);
+        if (replicationControllerHandler.getReplicationController(componentName) != null) {
+            replicationControllerHandler.updateNoOfReplicas(componentName, noOfReplicas);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public int getNoOfReplicas(String tenant, String appName) throws WebArtifactHandlerException {
@@ -129,14 +139,18 @@ public class WebArtifactHandler implements IWebArtifactHandler {
 
     public List<String> listHigherBuildArtifactVersions(String tenant, String appName, String version)
             throws WebArtifactHandlerException {
-        String lowerLimitVersion = replicationControllerHandler
-                .getReplicationController(generateKubernetesComponentName(tenant, appName)).getSpec().getTemplate()
-                .getSpec().getContainers().get(0).getImage();
-        List<String> artifactList = listExistingBuildArtifacts(tenant, appName, version);
         List<String> majorArtifactList = new ArrayList<>();
-        for (String artifactImageBuild : artifactList) {
-            if (compareBuildVersions(lowerLimitVersion, artifactImageBuild) < 0) {
-                majorArtifactList.add(artifactImageBuild);
+        if (replicationControllerHandler.getReplicationController(generateKubernetesComponentName(tenant, appName))
+                != null) {
+            String lowerLimitVersion = replicationControllerHandler
+                    .getReplicationController(generateKubernetesComponentName(tenant, appName)).getSpec().getTemplate()
+                    .getSpec().getContainers().get(0).getImage();
+            List<String> artifactList = listExistingBuildArtifacts(tenant, appName, version);
+            majorArtifactList = new ArrayList<>();
+            for (String artifactImageBuild : artifactList) {
+                if (compareBuildVersions(lowerLimitVersion, artifactImageBuild) < 0) {
+                    majorArtifactList.add(artifactImageBuild);
+                }
             }
         }
 
@@ -145,14 +159,18 @@ public class WebArtifactHandler implements IWebArtifactHandler {
 
     public List<String> listLowerBuildArtifactVersions(String tenant, String appName, String version)
             throws WebArtifactHandlerException {
-        String upperLimitVersion = replicationControllerHandler
-                .getReplicationController(generateKubernetesComponentName(tenant, appName)).getSpec().getTemplate()
-                .getSpec().getContainers().get(0).getImage();
-        List<String> artifactList = listExistingBuildArtifacts(tenant, appName, version);
         List<String> minorArtifactList = new ArrayList<>();
-        for (String artifactImageBuild : artifactList) {
-            if (compareBuildVersions(upperLimitVersion, artifactImageBuild) > 0) {
-                minorArtifactList.add(artifactImageBuild);
+        if (replicationControllerHandler.getReplicationController(generateKubernetesComponentName(tenant, appName))
+                != null) {
+            String upperLimitVersion = replicationControllerHandler
+                    .getReplicationController(generateKubernetesComponentName(tenant, appName)).getSpec().getTemplate()
+                    .getSpec().getContainers().get(0).getImage();
+            List<String> artifactList = listExistingBuildArtifacts(tenant, appName, version);
+            minorArtifactList = new ArrayList<>();
+            for (String artifactImageBuild : artifactList) {
+                if (compareBuildVersions(upperLimitVersion, artifactImageBuild) > 0) {
+                    minorArtifactList.add(artifactImageBuild);
+                }
             }
         }
 
