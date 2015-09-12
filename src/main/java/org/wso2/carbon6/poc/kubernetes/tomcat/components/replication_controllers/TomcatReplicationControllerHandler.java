@@ -21,8 +21,8 @@ import io.fabric8.kubernetes.api.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.carbon6.poc.kubernetes.tomcat.components.replication_controllers.interfaces.ITomcatReplicationControllerHandler;
-import org.wso2.carbon6.poc.kubernetes.tomcat.support.KubernetesConstantsExtended;
-import org.wso2.carbon6.poc.exceptions.WebArtifactHandlerException;
+import org.wso2.carbon6.poc.kubernetes.tomcat.constants.KubernetesConstantsExtended;
+import org.wso2.carbon6.poc.miscellaneous.exceptions.WebArtifactHandlerException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,7 +33,6 @@ import java.util.Map;
  * A Java class which implements the ITomcatReplicationControllerHandler interface
  */
 public class TomcatReplicationControllerHandler implements ITomcatReplicationControllerHandler {
-
     private final KubernetesClient client;
     private static final Logger LOG = LogManager.getLogger(TomcatReplicationControllerHandler.class);
 
@@ -105,11 +104,11 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
                 LOG.error(message);
                 throw new WebArtifactHandlerException(message);
             }
-        } catch (Exception e) {
+        } catch (Exception exception) {
             String message = String
                     .format("Could not create the replication controller[rc-identifier]: " + "%s", controllerName);
-            LOG.error(message, e);
-            throw new WebArtifactHandlerException(message, e);
+            LOG.error(message, exception);
+            throw new WebArtifactHandlerException(message, exception);
         }
     }
 
@@ -148,11 +147,11 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
                     client.updateReplicationController(controllerName, replicationController);
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception exception) {
             String message = String
                     .format("Could not update the replication controller[rc-identifier]: " + "%s", controllerName);
-            LOG.error(message, e);
-            throw new WebArtifactHandlerException(message, e);
+            LOG.error(message, exception);
+            throw new WebArtifactHandlerException(message, exception);
         }
     }
 
@@ -170,11 +169,11 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
                     client.updateReplicationController(controllerName, replicationController);
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception exception) {
             String message = String
                     .format("Could not update the replication controller[rc-identifier]: " + "%s", controllerName);
-            LOG.error(message, e);
-            throw new WebArtifactHandlerException(message, e);
+            LOG.error(message, exception);
+            throw new WebArtifactHandlerException(message, exception);
         }
     }
 
@@ -192,12 +191,11 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
                             controllerName));
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception exception) {
             String message = String
                     .format("Could not delete the replication controller[rc-identifier]: " + "%s", controllerName);
-            LOG.error(message, e);
-            throw new WebArtifactHandlerException(message, e);
+            LOG.error(message, exception);
+            throw new WebArtifactHandlerException(message, exception);
         }
     }
-
 }

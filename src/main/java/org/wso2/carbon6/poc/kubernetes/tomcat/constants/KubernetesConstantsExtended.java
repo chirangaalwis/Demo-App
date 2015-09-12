@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.wso2.carbon6.poc.kubernetes.tomcat.support;
+package org.wso2.carbon6.poc.kubernetes.tomcat.constants;
 
 public class KubernetesConstantsExtended {
     public static final String POD_COMPONENT_KIND = "Pod";
@@ -25,5 +25,4 @@ public class KubernetesConstantsExtended {
     public static final String NODE_PORT_ALLOCATION_FILENAME = "NodePortAllocation.txt";
     public static final String SESSION_AFFINITY_CONFIG = "None";
     public static final String SERVICE_PORT_NAME = "http-1";
-    public static final String LOCALHOST_NODE_IP = "127.0.0.1";
 }

@@ -16,7 +16,7 @@
 package org.wso2.carbon6.poc.kubernetes.tomcat.components.services.interfaces;
 
 import io.fabric8.kubernetes.api.model.Service;
-import org.wso2.carbon6.poc.exceptions.WebArtifactHandlerException;
+import org.wso2.carbon6.poc.miscellaneous.exceptions.WebArtifactHandlerException;
 
 public interface ITomcatServiceHandler {
     /**

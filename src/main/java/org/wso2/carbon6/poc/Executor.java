@@ -15,7 +15,7 @@
 */
 package org.wso2.carbon6.poc;
 
-import org.wso2.carbon6.poc.exceptions.WebArtifactHandlerException;
+import org.wso2.carbon6.poc.miscellaneous.exceptions.WebArtifactHandlerException;
 import org.wso2.carbon6.poc.webartifact.WebArtifactHandler;
 import org.wso2.carbon6.poc.webartifact.interfaces.IWebArtifactHandler;
 
@@ -26,7 +26,6 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class Executor {
-
     private static final String ENDPOINT_URL = "http://127.0.0.1:8080";
     private static final Scanner SCANNER = new Scanner(System.in);
 
@@ -220,7 +219,10 @@ public class Executor {
             inputs = gatherRepositoryData();
             tenant = (String) inputs.get("tenant");
             appName = (String) inputs.get("app");
-            webArtifactHandler.remove(tenant, appName);
+            boolean removed = webArtifactHandler.remove(tenant, appName);
+            if (!removed) {
+                showMenu("No such web artifact is currently deployed.\n");
+            }
             break;
         case 5:
             inputs = gatherScalingData(webArtifactHandler);
@@ -252,5 +254,4 @@ public class Executor {
             return null;
         }
     }
-
 }

@@ -15,7 +15,7 @@
 */
 package org.wso2.carbon6.poc.webartifact.interfaces;
 
-import org.wso2.carbon6.poc.exceptions.WebArtifactHandlerException;
+import org.wso2.carbon6.poc.miscellaneous.exceptions.WebArtifactHandlerException;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -142,8 +142,8 @@ public interface IWebArtifactHandler {
      *
      * @param tenant  name of the tenant
      * @param appName name of the app
+     * @return true if successfully removed, else false
      * @throws WebArtifactHandlerException
      */
-    void remove(String tenant, String appName) throws WebArtifactHandlerException;
-
+    boolean remove(String tenant, String appName) throws WebArtifactHandlerException;
 }

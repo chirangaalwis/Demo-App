@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.wso2.carbon6.poc.exceptions;
+package org.wso2.carbon6.poc.miscellaneous.exceptions;
 
 /**
  * a Java application exception class which extends the java.lang.Exception class

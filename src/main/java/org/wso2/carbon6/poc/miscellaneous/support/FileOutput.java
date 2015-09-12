@@ -13,14 +13,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.wso2.carbon6.poc.docker.support;
+package org.wso2.carbon6.poc.miscellaneous.support;
 
 import java.io.FileNotFoundException;
 import java.util.Formatter;
 import java.util.List;
 
 class FileOutput {
-
     // Formatter to output text to a specified file
     private Formatter output;
 
@@ -29,11 +28,8 @@ class FileOutput {
      * Formatter instance is to be used
      *
      * @param fileName the name of the file on which the Formatter instance is to be used
-     * @throws FileNotFoundException If the given file name does not denote an existing,
-     *                               writable regular file and a new regular file of that name cannot be created,
-     *                               or if some other error occurs while opening or creating the file
-     * @throws SecurityException     If a security manager exists and denies permission to write
-     *                               file
+     * @throws FileNotFoundException
+     * @throws SecurityException
      */
     public void openFile(String fileName) throws FileNotFoundException, SecurityException {
         output = new Formatter(fileName);

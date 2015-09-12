@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.wso2.carbon6.poc.kubernetes.tomcat.support;
+package org.wso2.carbon6.poc.miscellaneous.support;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,5 +51,4 @@ public class FileInputThread implements Runnable {
             LOG.error(message, exception);
         }
     }
-
 }

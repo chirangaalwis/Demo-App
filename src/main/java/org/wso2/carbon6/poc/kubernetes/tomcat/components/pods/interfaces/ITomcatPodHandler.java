@@ -16,7 +16,7 @@
 package org.wso2.carbon6.poc.kubernetes.tomcat.components.pods.interfaces;
 
 import io.fabric8.kubernetes.api.model.Pod;
-import org.wso2.carbon6.poc.exceptions.WebArtifactHandlerException;
+import org.wso2.carbon6.poc.miscellaneous.exceptions.WebArtifactHandlerException;
 
 import java.util.List;
 

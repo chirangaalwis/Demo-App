@@ -16,7 +16,7 @@
 package org.wso2.carbon6.poc.kubernetes.tomcat.components.replication_controllers.interfaces;
 
 import io.fabric8.kubernetes.api.model.ReplicationController;
-import org.wso2.carbon6.poc.exceptions.WebArtifactHandlerException;
+import org.wso2.carbon6.poc.miscellaneous.exceptions.WebArtifactHandlerException;
 
 /**
  * A Java interface for replication controller handling operations

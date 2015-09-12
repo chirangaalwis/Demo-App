@@ -20,16 +20,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.stratos.kubernetes.client.KubernetesApiClient;
 import org.apache.stratos.kubernetes.client.KubernetesConstants;
-import org.apache.stratos.kubernetes.client.exceptions.KubernetesClientException;
 import org.apache.stratos.kubernetes.client.interfaces.KubernetesAPIClientInterface;
-import org.wso2.carbon6.poc.docker.support.FileOutputThread;
+import org.wso2.carbon6.poc.miscellaneous.support.FileOutputThread;
 import org.wso2.carbon6.poc.kubernetes.tomcat.components.services.interfaces.ITomcatServiceHandler;
-import org.wso2.carbon6.poc.exceptions.WebArtifactHandlerException;
-import org.wso2.carbon6.poc.kubernetes.tomcat.support.FileInputThread;
-import org.wso2.carbon6.poc.kubernetes.tomcat.support.KubernetesConstantsExtended;
+import org.wso2.carbon6.poc.miscellaneous.exceptions.WebArtifactHandlerException;
+import org.wso2.carbon6.poc.miscellaneous.support.FileInputThread;
+import org.wso2.carbon6.poc.kubernetes.tomcat.constants.KubernetesConstantsExtended;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,7 +77,7 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
                 fileOutput = new FileOutputThread(KubernetesConstantsExtended.NODE_PORT_ALLOCATION_FILENAME, output);
                 fileOutput.run();
             }
-        } catch (KubernetesClientException exception) {
+        } catch (Exception exception) {
             String message = String.format("Could not create the service[service-identifier]: " + "%s", serviceId);
             LOG.error(message, exception);
             throw new WebArtifactHandlerException(message, exception);
@@ -98,7 +96,7 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
                     }
                 }
             }
-        } catch (KubernetesClientException exception) {
+        } catch (Exception exception) {
             String message = String.format("Could not create the service[service-identifier]: " + "%s", serviceId);
             LOG.error(message, exception);
             throw new WebArtifactHandlerException(message, exception);
@@ -115,7 +113,7 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
             } else {
                 return "ClusterIP not available.";
             }
-        } catch (WebArtifactHandlerException exception) {
+        } catch (Exception exception) {
             String message = String
                     .format("Could not find the service[service-identifier] " + "cluster ip: %s", serviceId);
             LOG.error(message, exception);
@@ -126,27 +124,20 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
     public String getNodePortIP(String serviceId, String appName) throws WebArtifactHandlerException {
         int nodePort;
         try {
-            try {
-                Service service = getService(serviceId);
-                final int portIndex = 0;
-                if (service != null) {
-                    nodePort = service.getSpec().getPorts().get(portIndex).getNodePort();
-                } else {
-                    nodePort = -1;
-                }
-            } catch (WebArtifactHandlerException exception) {
-                String message = String
-                        .format("Could not find the service[service-identifier] cluster ip: %s", serviceId);
-                LOG.error(message, exception);
-                throw new WebArtifactHandlerException(message, exception);
+            Service service = getService(serviceId);
+            final int portIndex = 0;
+            if (service != null) {
+                nodePort = service.getSpec().getPorts().get(portIndex).getNodePort();
+            } else {
+                nodePort = -1;
             }
             if (nodePort != -1) {
                 return String.format("http://%s:%d/%s", InetAddress.getLocalHost().getHostName(), nodePort, appName);
             } else {
                 return "NodePortIP not available";
             }
-        } catch (UnknownHostException exception) {
-            String message = "Could not find the localhost IP.";
+        } catch (Exception exception) {
+            String message = "Could not find the NodePort IP.";
             LOG.error(message, exception);
             throw new WebArtifactHandlerException(message, exception);
         }
@@ -166,7 +157,7 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
                     LOG.debug(message);
                 }
             }
-        } catch (KubernetesClientException exception) {
+        } catch (Exception exception) {
             String message = String.format("Could not delete the service[service-identifier]: " + "%s", serviceId);
             LOG.error(message, exception);
             throw new WebArtifactHandlerException(message, exception);
@@ -179,15 +170,12 @@ public class TomcatServiceHandler implements ITomcatServiceHandler {
      */
     private void setInitNodePortValue() {
         FileInputThread fileInput = new FileInputThread(KubernetesConstantsExtended.NODE_PORT_ALLOCATION_FILENAME);
-
         fileInput.run();
         List<String> input = fileInput.getFileContent();
-
         if (input.size() > 0) {
             nodePortValue = Integer.parseInt(input.get(0));
         } else {
             nodePortValue = KubernetesConstantsExtended.NODE_PORT_LOWER_LIMIT + 1;
         }
     }
-
 }

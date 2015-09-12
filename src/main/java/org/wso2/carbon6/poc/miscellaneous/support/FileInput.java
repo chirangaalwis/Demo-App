@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.wso2.carbon6.poc.kubernetes.tomcat.support;
+package org.wso2.carbon6.poc.miscellaneous.support;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,8 +36,10 @@ class FileInput {
      * initializes the Scanner instance using the name of the file specified by the String
      *
      * @param fileName name of the file to be used with the Scanner instance
-     * @throws IOException       I/O error when opening the file
-     * @throws SecurityException If a security manager denies read access to the file or directory
+     * @throws IOException
+     * @throws SecurityException
+     * @throws IllegalStateException
+     * @throws NoSuchElementException
      */
     public void openFile(String fileName)
             throws IOException, SecurityException, IllegalStateException, NoSuchElementException {
@@ -57,6 +59,8 @@ class FileInput {
      * returns the String data items read from the file
      *
      * @return list of String data items read from the file
+     * @throws IllegalStateException
+     * @throws NoSuchElementException
      */
     public List<String> readDataFromFile() throws IllegalStateException, NoSuchElementException {
         List<String> data = new ArrayList<>();

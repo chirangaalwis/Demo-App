@@ -21,8 +21,8 @@ import io.fabric8.kubernetes.api.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.carbon6.poc.kubernetes.tomcat.components.pods.interfaces.ITomcatPodHandler;
-import org.wso2.carbon6.poc.kubernetes.tomcat.support.KubernetesConstantsExtended;
-import org.wso2.carbon6.poc.exceptions.WebArtifactHandlerException;
+import org.wso2.carbon6.poc.kubernetes.tomcat.constants.KubernetesConstantsExtended;
+import org.wso2.carbon6.poc.miscellaneous.exceptions.WebArtifactHandlerException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,7 +33,6 @@ import java.util.Map;
  * A Java class which implements the ITomcatPodHandler Java interface
  */
 public class TomcatPodHandler implements ITomcatPodHandler {
-
     private final KubernetesClient client;
     private static final Logger LOG = LogManager.getLogger(TomcatPodHandler.class);
 
@@ -89,10 +88,10 @@ public class TomcatPodHandler implements ITomcatPodHandler {
                     throw new WebArtifactHandlerException(message);
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception exception) {
             String message = String.format("Could not create the pod[pod-identifier]: " + "%s", podName);
-            LOG.error(message, e);
-            throw new WebArtifactHandlerException(message, e);
+            LOG.error(message, exception);
+            throw new WebArtifactHandlerException(message, exception);
         }
     }
 
@@ -111,14 +110,14 @@ public class TomcatPodHandler implements ITomcatPodHandler {
                     LOG.debug(String.format("Deleted Kubernetes pod [pod-name] %s", podName));
                 }
             } else {
-                String message = String.format("Could not create the pod[pod-identifier]: " + "%s", podName);
+                String message = "Could not create the pod. Pod name cannot be null.";
                 LOG.error(message);
                 throw new WebArtifactHandlerException(message);
             }
-        } catch (Exception e) {
+        } catch (Exception exception) {
             String message = String.format("Could not delete the pod[pod-identifier]: " + "%s", podName);
-            LOG.error(message, e);
-            throw new WebArtifactHandlerException(message, e);
+            LOG.error(message, exception);
+            throw new WebArtifactHandlerException(message, exception);
         }
     }
 
@@ -143,10 +142,10 @@ public class TomcatPodHandler implements ITomcatPodHandler {
                 LOG.error(message);
                 throw new WebArtifactHandlerException(message);
             }
-        } catch (Exception e) {
+        } catch (Exception exception) {
             String message = "Could not delete the replica pods.";
-            LOG.error(message, e);
-            throw new WebArtifactHandlerException(message, e);
+            LOG.error(message, exception);
+            throw new WebArtifactHandlerException(message, exception);
         }
     }
 }
