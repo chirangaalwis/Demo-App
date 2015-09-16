@@ -8,5 +8,5 @@ This Java IntelliJ IDEA project has been packaged using the maven-assembly-plugi
 Follow the steps below to run the application:
 
 1. Download and extract web-app-handler binary distribution to a desired location.
-2. Unzip the java-web-artifact-handler-1.0-SNAPSHOT.zip.
+2. Unzip the web-artifact-handler-1.0.zip.
 3. Run /bin/web-app-handler-extension.sh.
