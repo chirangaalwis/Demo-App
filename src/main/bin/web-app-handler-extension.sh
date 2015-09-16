@@ -29,4 +29,4 @@ class_path=`echo ${lib_path}/*.jar | tr ' ' ':'`
 # Uncomment below line to enable remote debugging
 #debug="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
 
-java -cp "${class_path}" ${properties} ${debug} org.wso2.carbon6.poc.Executor $*
+java -cp "${class_path}" ${properties} ${debug} org.wso2.strategy.poc.Executor $*
