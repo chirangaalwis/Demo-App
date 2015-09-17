@@ -1,2 +1,0 @@
-docker-url=unix:///var/run/docker.sock
-kubernetes-url=http://127.0.0.1:8080
