@@ -51,7 +51,6 @@ public class Executor {
                 process(userChoice, webArtifactHandler);
             }
         } catch (Exception exception) {
-            exception.printStackTrace();
             System.exit(1);
         }
     }
@@ -109,10 +108,12 @@ public class Executor {
             }
         } while (!exists);
         int replicas;
+        String tempUserChoice;
         do {
             showMenu("Number of deployment replicas: ");
-            replicas = SCANNER.nextInt();
+            tempUserChoice = SCANNER.next();
             SCANNER.nextLine();
+            replicas = getUserChoice(tempUserChoice);
         } while ((replicas < 1));
         // Add to list of inputs
         inputs.put("artifact", artifactPath);
@@ -153,8 +154,9 @@ public class Executor {
         if (noOfReplicas > 0) {
             showMenu("Current no. of web artifact replicas running: " + noOfReplicas + "\n");
             showMenu("Enter new no. of replicas: ");
-            int replicas = SCANNER.nextInt();
+            String tempUserChoice = SCANNER.next();
             SCANNER.nextLine();
+            int replicas = getUserChoice(tempUserChoice);
             // Add to list of inputs
             inputs.put("replicas", replicas);
         } else {
@@ -211,10 +213,12 @@ public class Executor {
             if ((displayLowerList != null) && (displayLowerList.size() > 0)) {
                 displayList(displayLowerList);
                 int userChoice;
+                String tempUserChoice;
                 do {
                     showMenu("Enter your choice: ");
-                    userChoice = SCANNER.nextInt();
+                    tempUserChoice = SCANNER.next();
                     SCANNER.nextLine();
+                    userChoice = getUserChoice(tempUserChoice);
                 } while ((userChoice < 1) || (userChoice > displayLowerList.size()));
                 webArtifactHandler.rollBack(tenant, appName, version, getListChoice(displayLowerList, userChoice));
             } else {
@@ -288,7 +292,10 @@ public class Executor {
     }
 
     private static Map<String, String> getClientConfigurationData() {
-        setClientConfigurationData();
+        Path configFilePath = Paths.get(CONFIGURATION_FILE);
+        if(!Files.exists(configFilePath)) {
+            setClientConfigurationData();
+        }
         Map<String, String> clientConfigData;
         FileInputKeyValueDataThread inputThread = new FileInputKeyValueDataThread(CONFIGURATION_FILE);
         inputThread.run();

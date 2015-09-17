@@ -19,9 +19,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
-import org.wso2.strategy.poc.docker.JavaDockerContainerHandler;
 import org.wso2.strategy.poc.docker.JavaDockerImageHandler;
-import org.wso2.strategy.poc.docker.interfaces.IDockerContainerHandler;
 import org.wso2.strategy.poc.docker.interfaces.IDockerImageHandler;
 import org.wso2.strategy.poc.kubernetes.components.pod.TomcatPodHandler;
 import org.wso2.strategy.poc.kubernetes.components.pod.interfaces.ITomcatPodHandler;
@@ -39,19 +37,16 @@ import java.util.List;
 
 public class WebArtifactHandler implements IWebArtifactHandler {
     private final IDockerImageHandler imageBuilder;
-    private final IDockerContainerHandler containerHandler;
     private final ITomcatPodHandler podHandler;
     private final ITomcatReplicationControllerHandler replicationControllerHandler;
     private final ITomcatServiceHandler serviceHandler;
 
     private static final int IMAGE_BUILD_DELAY_IN_MILLISECONDS = 2000;
-    private static final int KUBERNETES_COMPONENT_REMOVAL_DELAY_IN_MILLISECONDS = 10000;
     private static final Log LOG = LogFactory.getLog(TomcatReplicationControllerHandler.class);
 
     public WebArtifactHandler(String dockerEndpointURL, String kubernetesEndpointURL)
             throws WebArtifactHandlerException {
         imageBuilder = new JavaDockerImageHandler(dockerEndpointURL);
-        containerHandler = new JavaDockerContainerHandler(dockerEndpointURL);
         podHandler = new TomcatPodHandler(kubernetesEndpointURL);
         replicationControllerHandler = new TomcatReplicationControllerHandler(kubernetesEndpointURL);
         serviceHandler = new TomcatServiceHandler(kubernetesEndpointURL);
@@ -197,18 +192,12 @@ public class WebArtifactHandler implements IWebArtifactHandler {
 
     public boolean remove(String tenant, String appName) throws WebArtifactHandlerException {
         String componentName = WebArtifactHandlerHelper.generateKubernetesComponentIdentifier(tenant, appName);
-        final int singleImageIndex = 0;
         try {
             if (replicationControllerHandler.getReplicationController(componentName) != null) {
-                String dockerImage = replicationControllerHandler.getReplicationController(componentName).getSpec()
-                        .getTemplate().getSpec().getContainers().get(singleImageIndex).getImage();
-                List<String> containerIds = containerHandler.getRunningContainerIdsByImage(dockerImage);
-                podHandler.deleteReplicaPods(replicationControllerHandler.deleteReplicationController(componentName),
-                        tenant, appName);
+                final int noPods = 0;
+                scale(tenant, appName, noPods);
+                replicationControllerHandler.deleteReplicationController(componentName);
                 serviceHandler.deleteService(componentName);
-                /*Thread.sleep(KUBERNETES_COMPONENT_REMOVAL_DELAY_IN_MILLISECONDS);
-                containerHandler.deleteContainers(containerIds);
-                imageBuilder.removeImage(tenant, appName, WebArtifactHandlerHelper.getDockerImageVersion(dockerImage));*/
                 return true;
             } else {
                 return false;

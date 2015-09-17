@@ -141,7 +141,7 @@ public class TomcatReplicationControllerHandler implements ITomcatReplicationCon
             try {
                 if (replicationController != null) {
                     ReplicationControllerSpec spec = replicationController.getSpec();
-                    if ((spec.getReplicas() != newReplicas) && (newReplicas > 0)) {
+                    if (spec.getReplicas() != newReplicas) {
                         spec.setReplicas(newReplicas);
                         client.updateReplicationController(controllerName, replicationController);
                     }
